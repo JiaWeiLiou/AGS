@@ -12,7 +12,7 @@ Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 #include <fstream>
 #include <ctime>
 
-//#define OUTPUTIMG
+#define OUTPUTIMG
 
 int main()
 {
