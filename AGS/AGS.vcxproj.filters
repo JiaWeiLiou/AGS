@@ -18,9 +18,18 @@
     <ClInclude Include="basic.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
+    <ClInclude Include="output.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="basic.cpp">
+      <Filter>資源檔</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>資源檔</Filter>
+    </ClCompile>
+    <ClCompile Include="output.cpp">
       <Filter>資源檔</Filter>
     </ClCompile>
   </ItemGroup>

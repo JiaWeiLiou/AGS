@@ -8,9 +8,8 @@ Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 #ifndef BASIC_H
 #define BASIC_H
 
+#include "output.h"
 #include <opencv2/opencv.hpp>
-#include <queue>
-#include <cmath>
 
 using namespace std;
 using namespace cv;
@@ -22,9 +21,9 @@ using namespace cv;
 void DivideArea(InputArray _gray, InputArray _blur, OutputArray _divide);
 
 //Otsu Threshold
-//divide : remove ambient light image (8UC1)
+//gray : gray image (8UC1)
 //binary : binary image (8UC1(BW))
-void OtsuThreshold(InputArray _divide, OutputArray _binary);
+void OtsuThreshold(InputArray _gray, OutputArray _binary);
 
 //Calculate Image Gradient
 //gray : gray image(8UC1)
@@ -42,6 +41,11 @@ void DivideLine(InputArray _gradient, InputArray _blur, OutputArray _divide);
 //area : area binary image (8UC1(BW))
 //line : line binary image (8UC1(BW))
 void HysteresisCut(InputArray _binary, InputArray _area, OutputArray _line);
+
+//Reverse Binary Image
+//binary : binary image (8UC1(BW))
+//rbinary : reversed binary image (8UC1(BW))
+void ReverseBinary(InputArray _binary, OutputArray _rbinary);
 
 //Combine Area and Line Extraction
 //area : area binary image (8UC1(BW))
