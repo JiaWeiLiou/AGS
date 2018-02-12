@@ -5,6 +5,7 @@ Synopsis     [ Automatic Grain Sizing ]
 Author       [ Jia-Wei (Jimmy) Liou ]
 Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 ******************************************************************************/
+
 #ifndef BASIC_H
 #define BASIC_H
 
@@ -30,7 +31,7 @@ void OtsuThreshold(InputArray _gray, OutputArray _binary);
 //gradient : gradient image(8UC1)
 void Gradient(InputArray _gray, OutputArray _gradient);
 
-//Remove Ambient Light for Line
+//Remove Ambient Light for Image Gradient
 //gradient : gradient image(8UC1)
 //blur : blur gradient image (8UC1)
 //divide : remove ambient light gradient image (8UC1)

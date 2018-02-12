@@ -5,6 +5,7 @@ Synopsis     [ Output Special Image Processing ]
 Author       [ Jia-Wei (Jimmy) Liou ]
 Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 ******************************************************************************/
+
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
@@ -24,10 +25,10 @@ int findroot(int labeltable[], int label);
 
 //Find Connect Object 
 //binary : binary image(8UC1)
-//labels : labels image(32SC1)
+//labelImg : labels image(32SC1)
 //nears : nears type(4/6/8)
 //return : labels total number without 0(background)
-int bwlabel(InputArray _binary, OutputArray _labels, int nears);
+int bwlabel(InputArray _binary, OutputArray _labelImg, int nears);
 
 //Create Color Bar
 //colorbar : color bar index

@@ -1,3 +1,11 @@
+/******************************************************************************
+FileName     [ output.h ]
+PackageName  [ AGS ]
+Synopsis     [ Output Special Image Processing ]
+Author       [ Jia-Wei (Jimmy) Liou ]
+Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
+******************************************************************************/
+
 #include "output.h"
 
 int findroot(int labeltable[], int label)
@@ -9,20 +17,19 @@ int findroot(int labeltable[], int label)
 	return x;
 }
 
-int bwlabel(InputArray _binary, OutputArray _labels, int nears)
+int bwlabel(InputArray _binary, OutputArray _labelImg, int nears)
 {
 	Mat binary = _binary.getMat();
+	CV_Assert(binary.type() == CV_8UC1);
 
-	_labels.create(binary.size(), CV_32SC1);
-	Mat labels = _labels.getMat();
-	labels = Scalar(0);
+	_labelImg.create(binary.size(), CV_32SC1);
+	Mat labelImg = _labelImg.getMat();
+	labelImg = Scalar(0);
 
-	if (nears != 4 && nears != 6 && nears != 8) {
-		nears = 8;
-	}
+	if (nears != 4 && nears != 6 && nears != 8) { nears = 8; }
 
 	int nobj = 0;    // number of objects found in image  
-	int *labeltable = new int[binary.rows * binary.cols]();		// initialize label table with zero  
+	int *labeltable = new int[binary.rows*binary.cols]();		// initialize label table with zero  
 	int ntable = 0;
 
 	//	labeling scheme
@@ -36,118 +43,126 @@ int bwlabel(InputArray _binary, OutputArray _labels, int nears)
 	//	6 : A connects to B, C, and D
 	//	8 : A connects to B, C, D, and E
 
-	int B, C, D, E;
 	for (size_t i = 0; i < binary.rows; ++i) {
+		uchar *bwData = binary.ptr<uchar>(i);
+		int *labelData = labelImg.ptr<int>(i);
 		for (size_t j = 0; j < binary.cols; ++j) {
-			if (binary.at<uchar>(i, j) == 255) {   // if A is an object  
-				// get the neighboring labels B, C, D, and E
-				
-				B = (j == 0) ? 0 : findroot(labeltable, labels.at<int>(i, j - 1));
-				C = (i == 0) ? 0 : findroot(labeltable, labels.at<int>(i - 1, j));
-				D = (i == 0 || j == 0) ? 0 : findroot(labeltable, labels.at<int>(i - 1, j - 1));
-				E = (i == 0 || j == binary.cols - 1) ? 0 : findroot(labeltable, labels.at<int>(i - 1, j + 1));
+			if (bwData[j]) {   // if A is an object  
+							   // get the neighboring labels B, C, D, and E
+				int B = (!j) ? 0 : findroot(labeltable, labelImg.at<int>(i, j - 1));
+				int C = (!i) ? 0 : findroot(labeltable, labelImg.at<int>(i - 1, j));
+				int D = (!i || !j) ? 0 : findroot(labeltable, labelImg.at<int>(i - 1, j - 1));
+				int E = (!i || j == binary.cols - 1) ? 0 : findroot(labeltable, labelImg.at<int>(i - 1, j + 1));
 
-				if (nears == 4)	{	// apply 4 connectedness  
-					if (B && C)	{	// B and C are labeled  
-						if (B == C) { 
-							labels.at<int>(i, j) = B;
-						} else {
-							labeltable[C] = B;
-							labels.at<int>(i, j) = B;
-						}
-					} else if (B) {	// B is object but C is not   
-						labels.at<int>(i, j) = B; 
+				// apply 4 connectedness  
+				if (nears == 4) {
+					if (B && C)	// B and C are labeled  
+					{
+						labelData[j] = B;
+						if (B != C) { labeltable[C] = B; }
+					} else if (B) { // B is object but C is not  
+						labelData[j] = B;
 					} else if (C) {	// C is object but B is not  
-						labels.at<int>(i, j) = C; 
+						labelData[j] = C;
 					} else {	// B, C, D not object - new object label and put into table  
-						labels.at<int>(i, j) = labeltable[ntable] = ++ntable; 
-					}	
-				} else if (nears == 6) {	// apply 6 connected ness  
+						labelData[j] = labeltable[ntable] = ++ntable;
+					}
+					// apply 6 connected ness  
+				} else if (nears == 6) {
 					if (D) {	// D object, copy label and move on  
-						labels.at<int>(i, j) = D;
+						labelData[j] = D;
 					} else if (B && C) {	// B and C are labeled  
-						if (B == C) { 
-							labels.at<int>(i, j) = B;
+						if (B == C) {
+							labelData[j] = B;
 						} else {
 							int tlabel = B < C ? B : C;
 							labeltable[B] = tlabel;
 							labeltable[C] = tlabel;
-							labels.at<int>(i, j) = tlabel;
+							labelData[j] = tlabel;
 						}
-					} else if (B) {	// B is object but C is not  	
-						labels.at<int>(i, j) = B;
-					} else if (C) {	// C is object but B is not  
-						labels.at<int>(i, j) = C; 
-					} else {	// B, C, D not object - new object label and put into table
-						labels.at<int>(i, j) = labeltable[ntable] = ++ntable;
-					} 	
-				} else if (nears == 8) {	// apply 8 connectedness  
+					} else if (B) {	// B is object but C is not  
+						labelData[j] = B;
+					} else if (C) {	// C is object but B is not   
+						labelData[j] = C;
+					} else { // B, C, D not object - new object label and put into table
+						labelData[j] = labeltable[ntable] = ++ntable;
+					}
+					// apply 8 connectedness  
+				} else if (nears == 8) {
 					if (B || C || D || E) {
 						int tlabel;
-						if (B) { 
-							tlabel = B; 
-						} else if (C) { 
-							tlabel = C; 
-						} else if (D) { 
-							tlabel = D; 
-						} else if (E) { 
-							tlabel = E; 
+
+						if (B) {
+							tlabel = B;
+						} else if (C) {
+							tlabel = C;
+						} else if (D) {
+							tlabel = D;
+						} else if (E) {
+							tlabel = E;
 						}
 
-						labels.at<int>(i, j) = tlabel;
+						labelData[j] = tlabel;
 
 						if (B && B != tlabel) { labeltable[B] = tlabel; }
 						if (C && C != tlabel) { labeltable[C] = tlabel; }
 						if (D && D != tlabel) { labeltable[D] = tlabel; }
 						if (E && E != tlabel) { labeltable[E] = tlabel; }
-					} else { 
-						labels.at<int>(i, j) = labeltable[ntable] = ++ntable; 
-					}	// label and put into table
+					} else { // label and put into table
+						labelData[j] = labeltable[ntable] = ++ntable;
+					}
 				}
-			} else {	// A is not an object so leave it
-				labels.at<int>(i, j) = 0; 
-			}	
-
-			for (size_t i = 0; i <= ntable; ++i) {
-				labeltable[i] = findroot(labeltable, i);	// consolidate component table
+			} else { // A is not an object so leave it
+				labelData[j] = 0;
 			}
-
-			for (size_t i = 0; i < binary.rows; ++i) {
-				for (size_t j = 0; j < binary.cols; ++j) {
-					labels.at<int>(i, j) = labeltable[labels.at<int>(i, j)];	// run image through the look-up table  
-				}
-			}
-
-			/*count up the objects in the image*/  
-			for (size_t i = 0; i <= ntable; ++i) {
-				labeltable[i] = 0;		//clear all table label
-			}
-
-			for (size_t i = 0; i < binary.rows; ++i) {
-				for (size_t j = 0; j < binary.cols; ++j) {
-					++labeltable[labels.at<int>(i, j)];		//calculate all label numbers
-				}
-			}
-
-			labeltable[0] = 0;		//clear 0 label
-			for (size_t i = 1; i <= ntable; ++i) {
-				if (labeltable[i] > 0) {
-					labeltable[i] = ++nobj;	// number the objects from 1 through n objects  and reset label table
-				}
-			}
-
-			/*run through the look-up table again*/  
-			for (size_t i = 0; i < binary.rows; ++i) {
-				for (size_t j = 0; j < binary.cols; ++j) {
-					labels.at<int>(i, j) = labeltable[labels.at<int>(i, j)];
-				}
-			}
-
-			delete[] labeltable;
-			labeltable = nullptr;
-			return nobj;
 		}
 	}
+
+	// consolidate component table  
+	for (int i = 0; i <= ntable; i++) {
+		labeltable[i] = findroot(labeltable, i);
+	}
+
+	// run image through the look-up table  
+	for (size_t i = 0; i < binary.rows; ++i) {
+		int *labelData = labelImg.ptr<int>(i);
+		for (size_t j = 0; j < binary.cols; ++j) {
+			labelData[j] = labeltable[labelData[j]];
+		}
+	}
+
+	// count up the objects in the image 
+	//clear all table label
+	for (int i = 0; i <= ntable; i++) {
+		labeltable[i] = 0;
+	}
+	//calculate all label numbers
+	for (size_t i = 0; i < binary.rows; ++i) {
+		int *labelData = labelImg.ptr<int>(i);
+		for (size_t j = 0; j < binary.cols; ++j) {
+			++labeltable[labelData[j]];
+		}
+	}
+
+	labeltable[0] = 0;		//clear 0 label
+							// number the objects from 1 through n objects  and reset label table
+	for (int i = 1; i <= ntable; i++) {
+		if (labeltable[i] > 0) {
+			labeltable[i] = ++nobj;
+		}
+	}
+
+	// run through the look-up table again  
+	for (size_t i = 0; i < binary.rows; ++i) {
+		int *labelData = labelImg.ptr<int>(i);
+		for (size_t j = 0; j < binary.cols; ++j) {
+			labelData[j] = labeltable[labelData[j]];
+		}
+	}
+
+	delete[] labeltable;
+
+	return nobj;
 }
 
 void makecolorbar(vector<Scalar> &colorbar)
@@ -215,7 +230,7 @@ void DrawColorBar(InputArray _gray, OutputArray _colorbarImg)
 {
 	Mat gray;
 	Mat temp = _gray.getMat();
-	if (temp.type() == CV_8UC1) { 
+	if (temp.type() != CV_32FC1) {
 		temp.convertTo(gray, CV_32FC1); 
 	} else { 
 		gray = _gray.getMat(); 
@@ -225,7 +240,7 @@ void DrawColorBar(InputArray _gray, OutputArray _colorbarImg)
 	Mat colorbarImg = _colorbarImg.getMat();
 
 	static vector<Scalar> colorbar; //Scalar i,g,b  
-	if (colorbarImg.empty()) { 
+	if (colorbar.empty()) { 
 		makecolorbar(colorbar); 
 	}
 
@@ -308,9 +323,9 @@ void DrawImage(InputArray _binary, InputArray _image, OutputArray _combineImg)
 				data[1] = 0;
 				data[2] = 0;
 			} else {
-				data[0] = image.at<uchar>(i, j);
-				data[1] = image.at<uchar>(i, j);
-				data[2] = image.at<uchar>(i, j);
+				data[0] = image.at<Vec3b>(i, j)[0];
+				data[1] = image.at<Vec3b>(i, j)[1];
+				data[2] = image.at<Vec3b>(i, j)[2];
 			}
 		}
 	}

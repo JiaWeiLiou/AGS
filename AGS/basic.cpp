@@ -1,3 +1,11 @@
+/******************************************************************************
+FileName     [ basic.h ]
+PackageName  [ AGS ]
+Synopsis     [ Automatic Grain Sizing ]
+Author       [ Jia-Wei (Jimmy) Liou ]
+Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
+******************************************************************************/
+
 #include "basic.h"
 
 void DivideArea(InputArray _gray, InputArray _blur, OutputArray _divide)
@@ -159,9 +167,9 @@ void HysteresisCut(InputArray _binary, InputArray _area, OutputArray _line)
 	for (size_t i = 0; i < line.rows; ++i) {
 		for (size_t j = 0; j < line.cols; ++j) {
 			if (labeltable[labelImg.at<int>(i, j)] || UT.at<uchar>(i, j)) { 
-				line.at<uchar>(i, j) = 0;
-			} else {
 				line.at<uchar>(i, j) = 255;
+			} else {
+				line.at<uchar>(i, j) = 0;
 			}
 		}
 	}
