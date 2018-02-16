@@ -284,119 +284,105 @@ int main()
 	cv::imwrite(objectDT_C_file, objectDT_C);
 #endif // OUTPUTIMG
 
-//	/* Extend Local Minima */
-//
-//	Mat objectEM;		//8UC1(BW)
-//	ExtendLocalMinimaDetection(objectDT, objectEM, 3);
-//
-//#ifdef OUTPUTIMG
-//	Mat objectEM_S;		//output(8UC1)
-//	DrawSeed(objectFH, objectEM, objectEM_S);
-//
-//	string  objectEM_S_file = filepath + "\\" + infilename + "_15.0_EM_O(S).png";			//Seed
-//	cv::imwrite(objectEM_S_file, objectEM_S);
-//#endif // OUTPUTIMG
-//
-//	/* Distance Cut */
-//
-//	Mat objectDC;		//8UC1(BW)
-//	DistanceCut(objectDT, objectDC);
-//	cv::addWeighted(objectEM, 1, objectDC, 1, 0, objectDC);
-//
-//#ifdef OUTPUTIMG
-//	Mat objectDC_S;		//output(8UC1)
-//	DrawSeed(objectFH, objectDC, objectDC_S);
-//
-//	string  objectDC_S_file = filepath + "\\" + infilename + "_16.0_DC_O(S).png";			//Seed
-//	cv::imwrite(objectDC_S_file, objectDC_S);
-//#endif // OUTPUTIMG
-//
-//	/* Add unlabeled labels */
-//
-//	Mat objectAL;		//8UC1(BW)
-//	AddLabel(objectFH, objectDC, objectAL);
-//
-//#ifdef OUTPUTIMG
-//	Mat objectAL_S;		//output(8UC1)
-//	DrawSeed(objectFH, objectAL, objectAL_S);
-//
-//	string  objectAL_S_file = filepath + "\\" + infilename + "_17.0_AL_O(S).png";			//Seed
-//	cv::imwrite(objectAL_S_file, objectAL_S);
-//#endif // OUTPUTIMG
-//
-//	/* Imposing Minima */
-//
-//	Mat objectIM;		//32FC1
-//	ImposeMinima(objectDT, objectAL, objectIM);
-//
-//#ifdef OUTPUTIMG
-//	Mat objectIM_G, objectIM_C;		//output(8UC1¡B8UC3)
-//	DrawGrayBar(objectIM, objectIM_G);
-//	DrawColorBar(objectIM, objectIM_C);
-//
-//	string objectIM_G_file = filepath + "\\" + infilename + "_18.0_IM_O(G).png";			//Gray
-//	cv::imwrite(objectIM_G_file, objectIM_G);
-//	string objectIM_C_file = filepath + "\\" + infilename + "_18.1_IM_O(C).png";			//Color
-//	cv::imwrite(objectIM_C_file, objectIM_C);
-//#endif // OUTPUTIMG
-//
-//	/* Watershed Segmentation */
-//
-//	Mat objectWT;		//8UC1(BW)
-//	WatershedTransform(objectFH, objectIM, objectWT);
-//
-//#ifdef OUTPUTIMG
-//	Mat objectWT_L, objectWT_I;		//output(8UC3¡B8UC3)
-//	DrawLabel(objectWT, objectWT_L);
-//	DrawImage(objectWT, image, objectWT_I);
-//
-//	string  objectWT_B_file = filepath + "\\" + infilename + "_19.0_WT_O(B).png";			//Binary
-//	cv::imwrite(objectWT_B_file, objectWT);
-//	string  objectWT_L_file = filepath + "\\" + infilename + "_19.1_WT_O(L).png";			//Labels
-//	cv::imwrite(objectWT_L_file, objectWT_L);
-//	string  objectWT_I_file = filepath + "\\" + infilename + "_19.2_WT_O(I).png";			//Combine
-//	cv::imwrite(objectWT_I_file, objectWT_I);
-//#endif // OUTPUTIMG
-//
-//	/**** Particle Post-Calculation ****/
-//
-//	/* Delete Edge object */
-//
-//	Mat objectDE;		//8UC1(BW)
-//	DeleteEdge(objectWT, objectDE);
-//
-//#ifdef OUTPUTIMG
-//	Mat objectDE_L, objectDE_I;		//output(8UC3¡B8UC3)
-//	DrawLabel(objectDE, objectDE_L);
-//	DrawImage(objectDE, image, objectDE_I);
-//
-//	string  objectDE_B_file = filepath + "\\" + infilename + "_20.0_DE_O(B).png";			//Binary
-//	cv::imwrite(objectDE_B_file, objectDE);
-//	string  objectDE_L_file = filepath + "\\" + infilename + "_20.1_DE_O(L).png";			//Labels
-//	cv::imwrite(objectDE_L_file, objectDE_L);
-//	string  objectDE_I_file = filepath + "\\" + infilename + "_20.2_DE_O(I).png";			//Combine
-//	cv::imwrite(objectDE_I_file, objectDE_I);
-//#endif // OUTPUTIMG
-//
-//	/* Fitting Ellipse */
-//
-//	Mat objectFE;		//8UC1(BW)
-//	vector<Size2f> ellipse = DrawEllipse(objectDE, objectFE);
-//
-//#ifdef OUTPUTIMG
-//	string  objectFE_B_file = filepath + "\\" + infilename + "_21.0_FE_O(B).png";			//Binary
-//	cv::imwrite(objectFE_B_file, objectFE);
-//#endif // OUTPUTIMG
-//
-//	fstream outfile;
-//	string outputPath = filepath + "\\" + "GrainSize.txt";
-//	outfile.open(outputPath, ios::out | ios::trunc);
-//
-//	for (size_t i = 0; i < ellipse.size(); ++i) {
-//		outfile << ellipse[i].width << "\t" << ellipse[i].height << endl;
-//	}
-//
-//	outfile.close();
+	/* Extend Local Minima */
+
+	Mat objectEM;		//8UC1(BW)
+	ExtendRegionalMinima(objectDT, objectEM, 3);
+
+#ifdef OUTPUTIMG
+	Mat objectEM_S;		//output(8UC1)
+	DrawSeed(objectCN, objectEM, objectEM_S);
+
+	string  objectEM_S_file = filepath + "\\" + infilename + "_15.0_EM_O(S).png";			//Seed
+	cv::imwrite(objectEM_S_file, objectEM_S);
+#endif // OUTPUTIMG
+
+	/* Add unlabeled labels */
+
+	Mat objectAS;		//8UC1(BW)
+	AddSeed(objectCN, objectEM, objectAS);
+
+#ifdef OUTPUTIMG
+	Mat objectAS_S;		//output(8UC1)
+	DrawSeed(objectCN, objectAS, objectAS_S);
+
+	string  objectAS_S_file = filepath + "\\" + infilename + "_16.0_AS_O(S).png";			//Seed
+	cv::imwrite(objectAS_S_file, objectAS_S);
+#endif // OUTPUTIMG
+
+	/* Imposing Minima */
+
+	Mat objectIM;		//32FC1
+	ImposeMinima(objectDT, objectAS, objectIM);
+
+#ifdef OUTPUTIMG
+	Mat objectIM_G, objectIM_C;		//output(8UC1¡B8UC3)
+	DrawGrayBar(objectIM, objectIM_G);
+	DrawColorBar(objectIM, objectIM_C);
+
+	string objectIM_G_file = filepath + "\\" + infilename + "_17.0_IM_O(G).png";			//Gray
+	cv::imwrite(objectIM_G_file, objectIM_G);
+	string objectIM_C_file = filepath + "\\" + infilename + "_17.1_IM_O(C).png";			//Color
+	cv::imwrite(objectIM_C_file, objectIM_C);
+#endif // OUTPUTIMG
+
+	/* Watershed Segmentation */
+
+	Mat objectWT;		//8UC1(BW)
+	WatershedTransform(objectCN, objectIM, objectWT);
+
+#ifdef OUTPUTIMG
+	Mat objectWT_L, objectWT_I;		//output(8UC3¡B8UC3)
+	DrawLabel(objectWT, objectWT_L);
+	DrawImage(objectWT, image, objectWT_I);
+
+	string  objectWT_B_file = filepath + "\\" + infilename + "_18.0_WT_O(B).png";			//Binary
+	cv::imwrite(objectWT_B_file, objectWT);
+	string  objectWT_L_file = filepath + "\\" + infilename + "_18.1_WT_O(L).png";			//Labels
+	cv::imwrite(objectWT_L_file, objectWT_L);
+	string  objectWT_I_file = filepath + "\\" + infilename + "_18.2_WT_O(I).png";			//Combine
+	cv::imwrite(objectWT_I_file, objectWT_I);
+#endif // OUTPUTIMG
+
+	/**** Particle Post-Calculation ****/
+
+	/* Delete Edge object */
+
+	Mat objectDE;		//8UC1(BW)
+	DeleteEdge(objectWT, objectDE);
+
+#ifdef OUTPUTIMG
+	Mat objectDE_L, objectDE_I;		//output(8UC3¡B8UC3)
+	DrawLabel(objectDE, objectDE_L);
+	DrawImage(objectDE, image, objectDE_I);
+
+	string  objectDE_B_file = filepath + "\\" + infilename + "_19.0_DE_O(B).png";			//Binary
+	cv::imwrite(objectDE_B_file, objectDE);
+	string  objectDE_L_file = filepath + "\\" + infilename + "_19.1_DE_O(L).png";			//Labels
+	cv::imwrite(objectDE_L_file, objectDE_L);
+	string  objectDE_I_file = filepath + "\\" + infilename + "_19.2_DE_O(I).png";			//Combine
+	cv::imwrite(objectDE_I_file, objectDE_I);
+#endif // OUTPUTIMG
+
+	/* Fitting Ellipse */
+
+	Mat objectFE;		//8UC1(BW)
+	vector<Size2f> ellipse = DrawEllipse(objectDE, objectFE);
+
+#ifdef OUTPUTIMG
+	string  objectFE_B_file = filepath + "\\" + infilename + "_20.0_FE_O(B).png";			//Binary
+	cv::imwrite(objectFE_B_file, objectFE);
+#endif // OUTPUTIMG
+
+	fstream outfile;
+	string outputPath = filepath + "\\" + "GrainSize.txt";
+	outfile.open(outputPath, ios::out | ios::trunc);
+
+	for (size_t i = 0; i < ellipse.size(); ++i) {
+		outfile << ellipse[i].width << "\t" << ellipse[i].height << endl;
+	}
+
+	outfile.close();
 
 	time = clock() - time;
 	cout << "spend" << (float)time / CLOCKS_PER_SEC << "seconds" << endl;

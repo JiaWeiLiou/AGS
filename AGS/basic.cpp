@@ -166,7 +166,7 @@ void HysteresisCut(InputArray _binary, InputArray _area, OutputArray _line)
 
 	for (size_t i = 0; i < line.rows; ++i) {
 		for (size_t j = 0; j < line.cols; ++j) {
-			if (labeltable[labelImg.at<int>(i, j)] || UT.at<uchar>(i, j)) { 
+			if (labeltable[labelImg.at<int>(i, j)] || UT.at<uchar>(i, j)) {
 				line.at<uchar>(i, j) = 255;
 			} else {
 				line.at<uchar>(i, j) = 0;
@@ -186,10 +186,10 @@ void ReverseBinary(InputArray _binary, OutputArray _rbinary)
 
 	for (size_t i = 0; i < binary.rows; ++i) {
 		for (size_t j = 0; j < binary.cols; ++j) {
-			if (binary.at<uchar>(i, j)) { 
-				rbinary.at<uchar>(i, j) = 0; 
-			} else { 
-				rbinary.at<uchar>(i, j) = 255; 
+			if (binary.at<uchar>(i, j)) {
+				rbinary.at<uchar>(i, j) = 0;
+			} else {
+				rbinary.at<uchar>(i, j) = 255;
 			}
 		}
 	}
@@ -206,10 +206,10 @@ void Combine(InputArray _area, InputArray _line, OutputArray _binary)
 
 	for (size_t i = 0; i < area.rows; ++i) {
 		for (size_t j = 0; j < area.cols; ++j) {
-			if (!area.at<uchar>(i, j) || !line.at<uchar>(i, j)) { 
-				binary.at<uchar>(i, j) = 0; 
-			} else { 
-				binary.at<uchar>(i, j) = 255; 
+			if (!area.at<uchar>(i, j) || !line.at<uchar>(i, j)) {
+				binary.at<uchar>(i, j) = 0;
+			} else {
+				binary.at<uchar>(i, j) = 255;
 			}
 		}
 	}
@@ -266,6 +266,474 @@ void ClearNoise(InputArray _binary, OutputArray _clear)
 	delete[] labeltable;
 }
 
+//void Reconstruct(InputArray _marker, InputArray _mask, OutputArray _hdistance)
+//{
+//	Mat marker = _marker.getMat();
+//
+//	Mat mask = _mask.getMat();
+//
+//	_hdistance.create(mask.size(), CV_32FC1);
+//	Mat hdistance = _hdistance.getMat();
+//
+//	min(marker, mask, hdistance);
+//	dilate(hdistance, hdistance, Mat());
+//	min(hdistance, mask, hdistance);
+//	Mat temp1 = Mat(marker.size(), CV_8UC1);
+//	Mat temp2 = Mat(marker.size(), CV_8UC1);
+//	do {
+//		hdistance.copyTo(temp1);
+//		dilate(hdistance, hdistance, Mat());
+//		min(hdistance, mask, hdistance);
+//		compare(temp1, hdistance, temp2, CV_CMP_NE);
+//	} while (sum(temp2).val[0]);
+//}
+
+void Reconstruct(InputArray _marker, InputArray _mask, OutputArray _hdistance)
+{
+	Mat marker = _marker.getMat();
+
+	Mat mask = _mask.getMat();
+
+	_hdistance.create(mask.size(), CV_32FC1);
+	Mat hdistance = _hdistance.getMat();
+
+	// neighbourhood group forward scan
+	Point2i  m[4] = { Point2i(-1, -1), Point2i(-1, 0), Point2i(-1, 1), Point2i(0, -1) };
+	// neighbourhood group backward scan
+	Point2i  n[4] = { Point2i(1, 1), Point2i(1, 0), Point2i(1, -1), Point2i(0, 1) };
+	// complete neighbourhood 
+	Point2i  nc[8] = { Point2i(-1, -1), Point2i(-1, 0), Point2i(-1, 1), Point2i(0, -1),
+					   Point2i(0, 1), Point2i(1, -1), Point2i(1, 0), Point2i(1, 1) };
+
+
+	// forward reconstruction
+	for (size_t i = 0; i < marker.rows; ++i) {
+		for (size_t j = 0; j < marker.cols; ++j) {
+			// find regional maximum of neighbourhood 
+			float d = marker.at<float>(i, j);
+			for (size_t k = 0; k < 4; ++k) {
+				if (i + m[k].x >= 0 && j + m[k].y >= 0 && i + m[k].x < marker.rows && j + m[k].y < marker.cols) {
+					d = std::max(marker.at<float>(i + m[k].x, j + m[k].y), d);
+				}
+			}
+
+			// compare mask and maximum value of neighbourhood
+			// write this value on position i,j
+			d = std::min(mask.at<float>(i, j), d);
+			hdistance.at<float>(i, j) = d;
+		}
+	}
+
+	std::queue<Point2i> fifo;
+
+	// backward reconstruction
+	for (int i = marker.rows - 1; i >= 0; --i) {
+		for (int j = marker.cols - 1; j >= 0; --j) {
+			// find regional maximum of neighbourhood 
+			float d = hdistance.at<float>(i, j);
+			for (size_t k = 0; k < 4; ++k) {
+				if (i + n[k].x >= 0 && j + n[k].y >= 0 && i + n[k].x < marker.rows && j + n[k].y < marker.cols) {
+					d = std::max(hdistance.at<float>(i + n[k].x, j + n[k].y), d);
+				}
+			}
+
+			// compare mask and maximum value of neighbourhood
+			// write this value on position i,j
+			d = std::min(mask.at<float>(i, j), d);
+			hdistance.at<float>(i, j) = d;
+
+			/* check if the current position might be changed in a forward scan */
+			for (size_t k = 0; k < 4; ++k) {
+				if (i + m[k].x >= 0 && j + m[k].y >= 0 && i + m[k].x < marker.rows && j + m[k].y < marker.cols) {
+					float q = hdistance.at<float>(i + m[k].x, j + m[k].y);
+					if ((q < d) && (q < mask.at<float>(i + m[k].x, j + m[k].y))) {
+						fifo.push(Point2i(i, j));
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	while (!fifo.empty()) {
+		Point2i base = fifo.front();
+		fifo.pop();
+
+		// complete neighbourhood
+		for (size_t k = 0; k < 8; ++k) {
+			Point2i base_new = base + nc[k];
+			if (base_new.x >= 0 && base_new.y >= 0 && base_new.x < marker.rows && base_new.y < marker.cols) {
+				if ((hdistance.at<float>(base_new.x, base_new.y) < hdistance.at<float>(base.x, base.y)) && (hdistance.at<float>(base_new.x, base_new.y) < mask.at<float>(base_new.x, base_new.y))) {
+					hdistance.at<float>(base_new.x, base_new.y) = std::min(hdistance.at<float>(base.x, base.y), mask.at<float>(base_new.x, base_new.y));
+					fifo.push(base_new);
+				}
+			}
+		}
+	}
+}
+
+void HMinimaTransform(InputArray _distance, OutputArray _hdistance, float h)
+{
+	Mat distance = _distance.getMat();
+
+	_hdistance.create(distance.size(), CV_32FC1);
+	Mat hdistance = _hdistance.getMat();
+
+	Mat marker(distance.size(), CV_32FC1);
+	for (size_t i = 0; i < distance.rows; ++i) {
+		for (size_t j = 0; j < distance.cols; ++j) {
+			marker.at<float>(i, j) = distance.at<float>(i, j) - h;
+		}
+	}
+
+	Reconstruct(marker, distance, hdistance);
+}
+
+void DetectRegionalMinima(InputArray _distance, OutputArray _seed)
+{
+	Mat distance = _distance.getMat();
+
+	_seed.create(distance.size(), CV_8UC1);
+	Mat seed = _seed.getMat();
+	seed = Scalar(255);
+
+	queue<Point2i> *mpFifo = new queue<Point2i>();
+
+	for (size_t y = 0; y < seed.rows; ++y) {
+		for (size_t x = 0; x < seed.cols; ++x) {
+			if (seed.at<uchar>(y, x)) {
+				for (int dy = -1; dy <= 1; ++dy) {
+					for (int dx = -1; dx <= 1; ++dx) {
+						if ((x + dx >= 0) && (x + dx < distance.cols) && (y + dy >= 0) && (y + dy < distance.rows)) {
+							// If pe2.value < pe1.value, pe1 is not a local minimum
+							if (floor(distance.at<float>(y, x)) > floor(distance.at<float>(y + dy, x + dx))) {
+								seed.at<uchar>(y, x) = 0;
+								mpFifo->push(Point2i(x, y));
+
+								while (!mpFifo->empty()) {
+									Point2i pe3 = mpFifo->front();
+									mpFifo->pop();
+
+									int xh = pe3.x;
+									int yh = pe3.y;
+
+									for (int dyh = -1; dyh <= 1; ++dyh) {
+										for (int dxh = -1; dxh <= 1; ++dxh) {
+											if ((xh + dxh >= 0) && (xh + dxh < distance.cols) && (yh + dyh >= 0) && (yh + dyh < distance.rows)) {
+												if (seed.at<uchar>(yh + dyh, xh + dxh)) {
+													if (floor(distance.at<float>(yh + dyh, xh + dxh)) == floor(distance.at<float>(y, x))) {
+														seed.at<uchar>(yh + dyh, xh + dxh) = 0;
+														mpFifo->push(Point2i(xh + dxh, yh + dyh));
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void ExtendRegionalMinima(InputArray _distance, OutputArray _seed, float h)
+{
+	Mat distance = _distance.getMat();
+
+	_seed.create(distance.size(), CV_8UC1);
+	Mat seed = _seed.getMat();
+
+	float imageMinLength = distance.rows < distance.cols ? distance.rows : distance.cols;
+
+	for (size_t i = 0; i < distance.rows; ++i) {
+		for (size_t j = 0; j < distance.cols; ++j) {
+			distance.at<float>(i, j) = distance.at<float>(i, j) > imageMinLength * 0.025 ? imageMinLength * 0.025 : distance.at<float>(i, j);
+		}
+	}
+
+	Mat objectHMT;
+	HMinimaTransform(distance, objectHMT, h);
+
+	for (size_t i = 0; i < objectHMT.rows; ++i) {
+		for (size_t j = 0; j < objectHMT.cols; ++j) {
+			objectHMT.at<float>(i, j) = -objectHMT.at<float>(i, j);
+		}
+	}
+
+	DetectRegionalMinima(objectHMT, seed);
+}
+
+void DistanceCut(InputArray _distance, OutputArray _seed)
+{
+	Mat distance = _distance.getMat();
+
+	_seed.create(distance.size(), CV_8UC1);
+	Mat seed = _seed.getMat();
+
+	float imageMinLength = distance.rows < distance.cols ? distance.rows : distance.cols;
+
+	for (size_t i = 0; i < distance.rows; ++i) {
+		for (size_t j = 0; j < distance.cols; ++j) {
+			seed.at<uchar>(i, j) = distance.at<float>(i, j) > imageMinLength * 0.025 ? 255 : 0;
+		}
+	}
+}
+
+void AddSeed(InputArray _binary, InputArray _seed, OutputArray _fseed)
+{
+	Mat binary = _binary.getMat();
+
+	Mat seed = _seed.getMat();
+
+	_fseed.create(binary.size(), CV_8UC1);
+	Mat fseed = _fseed.getMat();
+	seed.copyTo(fseed);
+
+	Mat labels;
+	int num = bwlabel(binary, labels, 4) + 1;	//include label 0
+
+	int *labeltable = new int[num]();
+
+	for (size_t i = 0; i < binary.rows; ++i) {
+		for (size_t j = 0; j < binary.cols; ++j) {
+			if (fseed.at<uchar>(i, j)) {
+				++labeltable[labels.at<int>(i, j)];
+			}
+		}
+	}
+
+	labeltable[0] = 1;	// add background
+
+	for (size_t i = 0; i < binary.rows; ++i) {
+		for (size_t j = 0; j < binary.cols; ++j) {
+			if (!labeltable[labels.at<int>(i, j)]) {
+				fseed.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	delete[] labeltable;
+	labeltable = nullptr;
+}
+
+void ImposeMinima(InputArray _distance, InputArray _seed, OutputArray _idistance)
+{
+	Mat distance = _distance.getMat();
+
+	Mat seed = _seed.getMat();
+
+	_idistance.create(distance.size(), CV_32FC1);
+	Mat idistance = _idistance.getMat();
+
+	float min = 0;
+	for (size_t i = 0; i < distance.rows; ++i) {
+		for (size_t j = 0; j < distance.cols; ++j) {
+			distance.at<float>(i, j) = -distance.at<float>(i, j);
+			if (distance.at<float>(i, j) < min) {
+				min = distance.at<float>(i, j);
+			}
+		}
+	}
+
+	min = min - 10;
+	distance.copyTo(idistance);
+
+	for (size_t i = 0; i < distance.rows; ++i) {
+		for (size_t j = 0; j < distance.cols; ++j) {
+			if (seed.at<uchar>(i, j)) {
+				idistance.at<float>(i, j) = min;
+			}
+		}
+	}
+}
+
+void DetectMinima(InputArray _distance, OutputArray _labelImg, priority_queue<PixelElement, vector<PixelElement>, mycomparison> &sortedQueue)
+{
+	Mat distance = _distance.getMat();
+	CV_Assert(distance.type() == CV_32FC1);
+
+	_labelImg.create(distance.size(), CV_32SC1);
+	Mat labelImg = _labelImg.getMat();
+
+	float min = 0.0f;
+	for (size_t i = 0; i < distance.rows; ++i) {
+		for (size_t j = 0; j < distance.cols; ++j) {
+			if (distance.at<float>(i, j) < min) {
+				min = distance.at<float>(i, j);
+			}
+		}
+	}
+
+	labelImg = Scalar(LABEL_UNPROCESSED);
+
+	queue<Point2i> *mpFifo = new queue<Point2i>();
+
+	for (size_t y = 0; y < distance.rows; ++y) {
+		for (size_t x = 0; x < distance.cols; ++x) {
+			if (labelImg.at<int>(y, x) == LABEL_UNPROCESSED) {
+				for (int dx = -1; dx <= 1; ++dx) {
+					for (int dy = -1; dy <= 1; ++dy) {
+						if ((x + dx >= 0) && (x + dx < distance.cols) && (y + dy >= 0) && (y + dy < distance.rows)) {
+							if (distance.at<float>(y, x) != min) {
+								labelImg.at<int>(y, x) = LABEL_NOLOCALMINIMUM;
+								mpFifo->push(Point2i(x, y));
+
+								while (!mpFifo->empty()) {
+									Point2i pe3 = mpFifo->front();
+									mpFifo->pop();
+
+									int xh = pe3.x;
+									int yh = pe3.y;
+
+									for (int dxh = -1; dxh <= 1; ++dxh) {
+										for (int dyh = -1; dyh <= 1; ++dyh) {
+											if ((xh + dxh >= 0) && (xh + dxh < distance.cols) && (yh + dyh >= 0) && (yh + dyh < distance.rows)) {
+												if (labelImg.at<int>(yh + dyh, xh + dxh) == LABEL_UNPROCESSED) {
+													if (distance.at<float>(yh + dyh, xh + dxh) == distance.at<float>(y, x)) {
+														labelImg.at<int>(yh + dyh, xh + dxh) = LABEL_NOLOCALMINIMUM;
+														mpFifo->push(Point2i(xh + dxh, yh + dyh));
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	delete mpFifo;
+
+	mpFifo = new queue<Point2i>();
+	int mNumberOfLabels = LABEL_MINIMUM;
+
+	for (size_t y = 0; y < distance.rows; ++y) {
+		for (size_t x = 0; x < distance.cols; ++x) {
+			if (labelImg.at<int>(y, x) == LABEL_UNPROCESSED) {
+				labelImg.at<int>(y, x) = mNumberOfLabels;
+				mpFifo->push(Point2i(x, y));
+
+				while (!(mpFifo->empty())) {
+					Point2i fifoElement = mpFifo->front();
+					int xf = fifoElement.x;
+					int yf = fifoElement.y;
+
+					for (int dyf = -1; dyf <= 1; ++dyf) {
+						for (int dxf = -1; dxf <= 1; ++dxf) {
+							if ((xf + dxf >= 0) && (xf + dxf < distance.cols) && (yf + dyf >= 0) && (yf + dyf < distance.rows)) {
+								if (labelImg.at<int>(yf + dyf, xf + dxf) == LABEL_UNPROCESSED) {
+									labelImg.at<int>(yf + dyf, xf + dxf) = mNumberOfLabels;
+									mpFifo->push(Point2i(xf + dxf, yf + dyf));
+								} else if (labelImg.at<int>(yf + dyf, xf + dxf) == LABEL_NOLOCALMINIMUM) {
+									labelImg.at<int>(yf + dyf, xf + dxf) = LABEL_PROCESSING;
+									sortedQueue.push(PixelElement(distance.at<float>(yf + dyf, xf + dxf), xf + dxf, yf + dyf));
+								}
+							}
+						}
+					}
+					mpFifo->pop();
+				}
+				++mNumberOfLabels;
+			}
+		}
+	}
+	delete mpFifo;
+}
+
+bool CheckForAlreadyLabeledNeighbours(int x, int y, Mat &label, Point2i &outLabeledNeighbour, int &outLabel)
+{
+	for (int dy = -1; dy <= 1; dy++) {
+		for (int dx = -1; dx <= 1; dx++) {
+			if ((x + dx >= 0) && (x + dx < label.cols) && (y + dy >= 0) && (y + dy < label.rows)) {
+				if (label.at<int>(y + dy, x + dx) > LABEL_RIDGE) {
+					outLabeledNeighbour = Point2i(x + dx, y + dy);
+					outLabel = label.at<int>(y + dy, x + dx);
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool CheckIfPixelIsWatershed(int x, int y, Mat &label, Point2i &inLabeledNeighbour, int &inLabelOfNeighbour)
+{
+	for (int dy = -1; dy <= 1; dy++) {
+		for (int dx = -1; dx <= 1; dx++) {
+			if ((x + dx >= 0) && (x + dx < label.cols) && (y + dy >= 0) && (y + dy < label.rows)) {
+				if ((label.at<int>(y + dy, x + dx) >= LABEL_MINIMUM) && (label.at<int>(y + dy, x + dx) != label.at<int>(inLabeledNeighbour.y, inLabeledNeighbour.x)) && ((inLabeledNeighbour.x != x + dx) || (inLabeledNeighbour.y != y + dy))) {
+					label.at<int>(y, x) = LABEL_RIDGE;
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+void WatershedTransform(InputArray _binary, InputArray _distance, OutputArray _object)
+{
+	Mat binary = _binary.getMat();
+
+	Mat distance = _distance.getMat();
+
+	_object.create(distance.size(), CV_8UC1);
+	Mat object = _object.getMat();
+
+	Mat label;
+	priority_queue<PixelElement, vector<PixelElement>, mycomparison> mvSortedQueue;
+	DetectMinima(distance, label, mvSortedQueue);
+
+	while (!mvSortedQueue.empty()) {
+		PixelElement lItemA = mvSortedQueue.top();
+		mvSortedQueue.pop();
+		int labelOfNeighbour = 0;
+
+		// (a) Pop element and find positive labeled neighbour
+		Point2i alreadyLabeledNeighbour;
+		int x = lItemA.x;
+		int y = lItemA.y;
+
+		// (b) Check if current pixel is watershed pixel by checking if there are different finally labeled neighbours
+		if (CheckForAlreadyLabeledNeighbours(x, y, label, alreadyLabeledNeighbour, labelOfNeighbour)) {
+			if (!(CheckIfPixelIsWatershed(x, y, label, alreadyLabeledNeighbour, labelOfNeighbour))) {
+				// c) if not watershed pixel, assign label of neighbour and add the LABEL_NOLOCALMINIMUM neighbours to priority_queue for processing
+				/*UpdateLabel(x, y, distance, label, labelOfNeighbour, mvSortedQueue);*/
+
+				label.at<int>(y, x) = labelOfNeighbour;
+
+				for (int dx = -1; dx <= 1; ++dx) {
+					for (int dy = -1; dy <= 1; ++dy) {
+						if ((x + dx >= 0) && (x + dx < label.cols) && (y + dy >= 0) && (y + dy < label.rows)) {
+							if (label.at<int>(y + dy, x + dx) == LABEL_NOLOCALMINIMUM) {
+								label.at<int>(y + dy, x + dx) = LABEL_PROCESSING;
+								mvSortedQueue.push(PixelElement(distance.at<float>(y + dy, x + dx), x + dx, y + dy));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	binary.copyTo(object);
+
+	// d) finalize the labelImage
+	for (size_t i = 0; i < object.rows; ++i) {
+		for (size_t j = 0; j < object.cols; ++j) {
+			if (label.at<int>(i, j) == LABEL_RIDGE) {
+				object.at<uchar>(i, j) = 0;
+			}
+		}
+	}
+}
+
 void DeleteEdge(InputArray _binary, OutputArray _object)
 {
 	Mat binary = _binary.getMat();
@@ -275,18 +743,18 @@ void DeleteEdge(InputArray _binary, OutputArray _object)
 	binary.copyTo(object);
 
 	for (size_t i = 0; i < object.cols; ++i) {
-		if (object.at<uchar>(0, i) == 255) { 
+		if (object.at<uchar>(0, i) == 255) {
 			floodFill(object, Point(i, 0), 0);
 		}
-		if (object.at<uchar>(object.rows - 1, i) == 255) { 
+		if (object.at<uchar>(object.rows - 1, i) == 255) {
 			floodFill(object, Point(i, object.rows - 1), 0);
 		}
 	}
 	for (size_t i = 0; i < object.rows; ++i) {
-		if (object.at<uchar>(i, 0) == 255) { 
+		if (object.at<uchar>(i, 0) == 255) {
 			floodFill(object, Point(0, i), 0);
 		}
-		if (object.at<uchar>(i, object.cols - 1) == 255) { 
+		if (object.at<uchar>(i, object.cols - 1) == 255) {
 			floodFill(object, Point(object.cols - 1, i), 0);
 		}
 	}
