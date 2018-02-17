@@ -13,6 +13,7 @@ Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 #include <ctime>
 
 #define OUTPUTIMG
+//#define OUTPUTTIME
 
 int main()
 {
@@ -27,11 +28,18 @@ int main()
 	string filepath(infile.substr(0, pos1));							//file path
 	string infilename(infile.substr(pos1 + 1, pos2 - pos1 - 1));		//file name
 
-	time_t time = clock();
+#ifdef OUTPUTTIME
+	time_t time0 = clock();
+	time_t time1, time2;
+#endif // OUTPUTTIME
 
 	/**** Image Pre-Processing ****/
 
 	/*Read Raw Image*/
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat image = cv::imread(infile);			//raw image (8UC3)
 	if (!image.data) { 
@@ -41,10 +49,18 @@ int main()
 
 	int imageMinLength = image.rows < image.cols ? image.rows : image.cols;
 
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Read Raw Image : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
+
 	/* Convert RGB Image to Gray */
 
-	Mat gray;			//8UC1
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
+	Mat gray;			//8UC1
 	cv::cvtColor(image, gray, CV_BGR2GRAY);
 
 #ifdef OUTPUTIMG
@@ -56,10 +72,18 @@ int main()
 	string gray_C_file = filepath + "\\" + infilename + "_0.1_GRAY(C).png";			//Color
 	cv::imwrite(gray_C_file, gray_C);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Convert RGB Image to Gray : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/**** Area-Based Image Extraction ****/
 
 	/* Bluring Image */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	int ksize = ceil((double)imageMinLength / 10.0);
 	ksize = ksize % 2 ? ksize : ksize + 1;
@@ -77,8 +101,16 @@ int main()
 	string grayBlur_C_file = filepath + "\\" + infilename + "_1.1_BLUR_I(C).png";			//Color
 	cv::imwrite(grayBlur_C_file, grayBlur_C);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Bluring Image : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Remove Ambient Light for Area */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat grayDIV;			//8UC1
 	DivideArea(gray, grayBlur, grayDIV);
@@ -92,8 +124,16 @@ int main()
 	string grayDIV_C_file = filepath + "\\" + infilename + "_2.1_DIV_I(C).png";			//Color
 	cv::imwrite(grayDIV_C_file, grayDIV_C);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Remove Ambient Light for Area : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Otsu Threshold */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat grayTH;			//8UC1(BW)
 	OtsuThreshold(grayDIV, grayTH);
@@ -102,8 +142,16 @@ int main()
 	string grayTH_B_file = filepath + "\\" + infilename + "_3.0_TH_I(B).png";			//Binary
 	cv::imwrite(grayTH_B_file, grayTH);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Otsu Threshold : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Area */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat area = grayTH;			//8UC1(BW)
 
@@ -119,11 +167,18 @@ int main()
 	string area_I_file = filepath + "\\" + infilename + "_4.2_AREA(I).png";			//Combine
 	cv::imwrite(area_I_file, area_I);
 #endif // OUTPUTIMG
-
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Area : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/**** Line-Based Image Extraction ****/
 
 	/* Calculate Image Gradient */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat gradm;			//8UC1
 	Gradient(gray, gradm);
@@ -138,8 +193,16 @@ int main()
 	string gradm_C_file = filepath + "\\" + infilename + "_5.1_GRAD_M(C).png";			//Color
 	cv::imwrite(gradm_C_file, gradm_C);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Calculate Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Bluring Image Gradient */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat gradmBlur;			//8UC1
 	cv::GaussianBlur(gradm, gradmBlur, Size(5, 5), 1, 1);
@@ -153,8 +216,16 @@ int main()
 	string gradmBlur_C_file = filepath + "\\" + infilename + "_6.1_BLUR_R(C).png";			//Color
 	cv::imwrite(gradmBlur_C_file, gradmBlur_C);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Bluring Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Remove Ambient Light for Image Gradient */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat gradmDIV;			//8UC1
 	DivideLine(gradm, gradmBlur, gradmDIV);
@@ -169,8 +240,16 @@ int main()
 	string gradmDIV_C_file = filepath + "\\" + infilename + "_7.1_DIV_M(C).png";		//Color
 	cv::imwrite(gradmDIV_C_file, gradmDIV_C);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Remove Ambient Light for Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Binary Image Gradient */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat gradmHT;			//8UC1(BW)
 	cv::threshold(gradmDIV, gradmHT, 1, 255, THRESH_BINARY);
@@ -179,8 +258,16 @@ int main()
 	string gradmHT_B_file = filepath + "\\" + infilename + "_8.0_HT_M(B).png";			//Binary
 	cv::imwrite(gradmHT_B_file, gradmHT);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Binary Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Hysteresis Cut Binary Image to Line by Area */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat lineHC;			//8UC1(BW)
 	HysteresisCut(gradmHT, area, lineHC);
@@ -189,8 +276,16 @@ int main()
 	string lineHC_B_file = filepath + "\\" + infilename + "_9.0_HC_L(B).png";			//Binary
 	cv::imwrite(lineHC_B_file, lineHC);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Hysteresis Cut Binary Image to Line by Area : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Line */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat line;			//8UC1(BW)
 	ReverseBinary(lineHC, line);
@@ -207,10 +302,18 @@ int main()
 	string line_I_file = filepath + "\\" + infilename + "_10.2_LINE(I).png";			//Combine
 	cv::imwrite(line_I_file, line_I);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Line : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/**** Combine Image Extraction ****/
 
 	/* Combine Area and Line */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat objectCOM;			//8UC1(BW)
 	Combine(area, line, objectCOM);
@@ -227,11 +330,18 @@ int main()
 	string  objectCOM_I_file = filepath + "\\" + infilename + "_11.2_COM_O(I).png";			//Combine
 	cv::imwrite(objectCOM_I_file, objectCOM_I);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Combine Area and Line : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Image morphology Opening */
 
-	Mat objectOpen;			//8UC1(BW)
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
+	Mat objectOpen;			//8UC1(BW)
 	Mat elementO = (Mat_<uchar>(3, 3) << 1, 1, 1, 1, 1, 1, 1, 1, 1);
 	cv::morphologyEx(objectCOM, objectOpen, MORPH_OPEN, elementO);
 
@@ -247,8 +357,16 @@ int main()
 	string  objectOpen_I_file = filepath + "\\" + infilename + "_12.2_OPEN_O(I).png";			//Combine
 	cv::imwrite(objectOpen_I_file, objectOpen_I);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Image morphology Opening : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Clear Noise of Black Pepper */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat objectCN;			//8UC1(BW)
 	ClearNoise(objectOpen, objectCN);
@@ -265,10 +383,18 @@ int main()
 	string  objectCN_I_file = filepath + "\\" + infilename + "_13.2_CN_O(I).png";			//Combine
 	cv::imwrite(objectCN_I_file, objectCN_I);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Clear Noise of Black Pepper : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/**** Watershed Algorithm ****/
 
 	/* Distance Transform */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat objectDT;		//32FC1
 	cv::distanceTransform(objectCN, objectDT, CV_DIST_L2, 3);
@@ -283,8 +409,16 @@ int main()
 	string objectDT_C_file = filepath + "\\" + infilename + "_14.1_DT_O(C).png";			//Color
 	cv::imwrite(objectDT_C_file, objectDT_C);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Distance Transform : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Extend Local Minima */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat objectEM;		//8UC1(BW)
 	ExtendRegionalMinima(objectDT, objectEM, 3);
@@ -296,8 +430,16 @@ int main()
 	string  objectEM_S_file = filepath + "\\" + infilename + "_15.0_EM_O(S).png";			//Seed
 	cv::imwrite(objectEM_S_file, objectEM_S);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Extend Local Minima : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Add unlabeled labels */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat objectAS;		//8UC1(BW)
 	AddSeed(objectCN, objectEM, objectAS);
@@ -309,8 +451,16 @@ int main()
 	string  objectAS_S_file = filepath + "\\" + infilename + "_16.0_AS_O(S).png";			//Seed
 	cv::imwrite(objectAS_S_file, objectAS_S);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Add unlabeled labels : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Watershed Segmentation */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat objectWT;		//8UC1(BW)
 	WatershedTransform(objectCN, objectAS, objectDT, objectWT);
@@ -327,10 +477,18 @@ int main()
 	string  objectWT_I_file = filepath + "\\" + infilename + "_17.2_WT_O(I).png";			//Combine
 	cv::imwrite(objectWT_I_file, objectWT_I);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Watershed Segmentation : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/**** Particle Post-Calculation ****/
 
 	/* Delete Edge object */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat objectDE;		//8UC1(BW)
 	DeleteEdge(objectWT, objectDE);
@@ -347,8 +505,16 @@ int main()
 	string  objectDE_I_file = filepath + "\\" + infilename + "_18.2_DE_O(I).png";			//Combine
 	cv::imwrite(objectDE_I_file, objectDE_I);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Delete Edge object : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Fitting Ellipse */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
 
 	Mat objectFE;		//8UC1(BW)
 	vector<Size2f> ellipse = DrawEllipse(objectDE, objectFE);
@@ -357,6 +523,10 @@ int main()
 	string  objectFE_B_file = filepath + "\\" + infilename + "_19.0_FE_O(B).png";			//Binary
 	cv::imwrite(objectFE_B_file, objectFE);
 #endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Fitting Ellipse : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	fstream outfile;
 	string outputPath = filepath + "\\" + "GrainSize.txt";
@@ -368,9 +538,11 @@ int main()
 
 	outfile.close();
 
-	time = clock() - time;
-	cout << "spend" << (float)time / CLOCKS_PER_SEC << "seconds" << endl;
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Total : " << (float)(time2 - time0) / CLOCKS_PER_SEC << " s" << endl;
 	system("pause");
+#endif // OUTPUTTIME
 
 	return 0;
 }

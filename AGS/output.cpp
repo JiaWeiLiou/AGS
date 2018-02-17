@@ -370,7 +370,7 @@ vector<Size2f> DrawEllipse(InputArray _object, OutputArray _ellipseImg)
 	}
 
 	vector<vector<Point2i>> pointset;
-	for (size_t i = 0; i < objectNum - 1; ++i) { 
+	for (size_t i = 0; i < objectNum; ++i) { 
 		pointset.push_back(vector<Point2i>()); 
 	}
 
@@ -384,7 +384,7 @@ vector<Size2f> DrawEllipse(InputArray _object, OutputArray _ellipseImg)
 
 	vector<Size2f> ellipse_param;
 
-	for (size_t i = 0; i < objectNum - 1; ++i) {
+	for (size_t i = 0; i < objectNum; ++i) {
 		if (pointset[i].size() > 5) {
 			RotatedRect ellipse_obj = fitEllipse(pointset[i]);
 
