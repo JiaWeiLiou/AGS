@@ -12,7 +12,7 @@ Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 #include <fstream>
 #include <ctime>
 
-#define OUTPUTIMG
+//#define OUTPUTIMG
 //#define OUTPUTTIME
 
 int main()
@@ -532,9 +532,15 @@ int main()
 	string outputPath = filepath + "\\" + "GrainSize.txt";
 	outfile.open(outputPath, ios::out | ios::trunc);
 
+	float outAxis, wAxis, hAxis;
+	outfile << infilename << ":\t";
 	for (size_t i = 0; i < ellipse.size(); ++i) {
-		outfile << ellipse[i].width << "\t" << ellipse[i].height << endl;
+		wAxis = ellipse[i].width;
+		hAxis = ellipse[i].height;
+		outAxis = wAxis < hAxis ? wAxis : hAxis;
+		outfile << outAxis << "\t";
 	}
+	outfile << endl;
 
 	outfile.close();
 
