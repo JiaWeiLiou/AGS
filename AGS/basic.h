@@ -145,7 +145,7 @@ void DetectMinima(InputArray _distance, InputArray _seed, OutputArray _labelImg,
 
 bool CheckForAlreadyLabeledNeighbours(int x, int y, Mat &label, Point2i &outLabeledNeighbour, int &outLabel);
 
-bool CheckIfPixelIsWatershed(int x, int y, Mat &label, Point2i &inLabeledNeighbour, int &inLabelOfNeighbour);
+bool CheckIfPixelIsWatershed(int x, int y, Mat &label, Point2i &inLabeledNeighbour);
 
 // Watershed Transform
 //binary : binary image (8UC1(BW))

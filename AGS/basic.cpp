@@ -562,7 +562,7 @@ bool CheckForAlreadyLabeledNeighbours(int x, int y, Mat &label, Point2i &outLabe
 	return false;
 }
 
-bool CheckIfPixelIsWatershed(int x, int y, Mat &label, Point2i &inLabeledNeighbour, int &inLabelOfNeighbour)
+bool CheckIfPixelIsWatershed(int x, int y, Mat &label, Point2i &inLabeledNeighbour)
 {
 	for (int dy = -1; dy <= 1; dy++) {
 		for (int dx = -1; dx <= 1; dx++) {
@@ -610,7 +610,7 @@ void WatershedTransform(InputArray _binary, InputArray _seed, InputArray _distan
 
 		// (b) Check if current pixel is watershed pixel by checking if there are different finally labeled neighbours
 		if (CheckForAlreadyLabeledNeighbours(x, y, label, alreadyLabeledNeighbour, labelOfNeighbour)) {
-			if (!(CheckIfPixelIsWatershed(x, y, label, alreadyLabeledNeighbour, labelOfNeighbour))) {
+			if (!(CheckIfPixelIsWatershed(x, y, label, alreadyLabeledNeighbour))) {
 				// c) if not watershed pixel, assign label of neighbour and add the LABEL_NOLOCALMINIMUM neighbours to priority_queue for processing
 				/*UpdateLabel(x, y, distance, label, labelOfNeighbour, mvSortedQueue);*/
 
