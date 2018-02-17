@@ -103,19 +103,13 @@ void DistanceCut(InputArray _distance, OutputArray _seed);
 //fseed : finial Seed
 void AddSeed(InputArray _binary, InputArray _seed, OutputArray _fseed);
 
-//Impose Minima
-//distance : distance image (32FC1)
-//seed : seed image (8UC1(BW))
-//idistance : impose minima distance image (32FC1)
-void ImposeMinima(InputArray _distance, InputArray _seed, OutputArray _idistance);
-
 class PixelElement
 {
 public:
-	PixelElement(float i, int j, int k) {
-		value = i;
+	PixelElement(float k, int j, int i) {
+		value = k;
 		x = j;
-		y = k;
+		y = i;
 	}
 	float value;  ///< pixel intensity
 	int x;      ///< x coordinate of pixel
@@ -147,7 +141,7 @@ public:
 //distance : distance image (32FC1)
 //labelImg : labels image(8UC3)
 //sortedQueue : sorted queue
-void DetectMinima(InputArray _distance, OutputArray _labelImg, priority_queue<PixelElement, vector<PixelElement>, mycomparison> &sortedQueue);
+void DetectMinima(InputArray _distance, InputArray _seed, OutputArray _labelImg, priority_queue<PixelElement, vector<PixelElement>, mycomparison> &sortedQueue);
 
 bool CheckForAlreadyLabeledNeighbours(int x, int y, Mat &label, Point2i &outLabeledNeighbour, int &outLabel);
 
@@ -155,9 +149,10 @@ bool CheckIfPixelIsWatershed(int x, int y, Mat &label, Point2i &inLabeledNeighbo
 
 // Watershed Transform
 //binary : binary image (8UC1(BW))
+//seed : seed image (8UC1(BW))
 //distance : distance image (32FC1)
 //object : object image (8UC1(BW))
-void WatershedTransform(InputArray _binary, InputArray _distance, OutputArray _object);
+void WatershedTransform(InputArray _binary, InputArray _seed, InputArray _distance, OutputArray _object);
 
 //Delete Edge object
 //binary : binary image (8UC1(BW))

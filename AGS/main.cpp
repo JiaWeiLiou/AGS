@@ -310,37 +310,21 @@ int main()
 	cv::imwrite(objectAS_S_file, objectAS_S);
 #endif // OUTPUTIMG
 
-	/* Imposing Minima */
-
-	Mat objectIM;		//32FC1
-	ImposeMinima(objectDT, objectAS, objectIM);
-
-#ifdef OUTPUTIMG
-	Mat objectIM_G, objectIM_C;		//output(8UC1¡B8UC3)
-	DrawGrayBar(objectIM, objectIM_G);
-	DrawColorBar(objectIM, objectIM_C);
-
-	string objectIM_G_file = filepath + "\\" + infilename + "_17.0_IM_O(G).png";			//Gray
-	cv::imwrite(objectIM_G_file, objectIM_G);
-	string objectIM_C_file = filepath + "\\" + infilename + "_17.1_IM_O(C).png";			//Color
-	cv::imwrite(objectIM_C_file, objectIM_C);
-#endif // OUTPUTIMG
-
 	/* Watershed Segmentation */
 
 	Mat objectWT;		//8UC1(BW)
-	WatershedTransform(objectCN, objectIM, objectWT);
+	WatershedTransform(objectCN, objectAS, objectDT, objectWT);
 
 #ifdef OUTPUTIMG
 	Mat objectWT_L, objectWT_I;		//output(8UC3¡B8UC3)
 	DrawLabel(objectWT, objectWT_L);
 	DrawImage(objectWT, image, objectWT_I);
 
-	string  objectWT_B_file = filepath + "\\" + infilename + "_18.0_WT_O(B).png";			//Binary
+	string  objectWT_B_file = filepath + "\\" + infilename + "_17.0_WT_O(B).png";			//Binary
 	cv::imwrite(objectWT_B_file, objectWT);
-	string  objectWT_L_file = filepath + "\\" + infilename + "_18.1_WT_O(L).png";			//Labels
+	string  objectWT_L_file = filepath + "\\" + infilename + "_17.1_WT_O(L).png";			//Labels
 	cv::imwrite(objectWT_L_file, objectWT_L);
-	string  objectWT_I_file = filepath + "\\" + infilename + "_18.2_WT_O(I).png";			//Combine
+	string  objectWT_I_file = filepath + "\\" + infilename + "_17.2_WT_O(I).png";			//Combine
 	cv::imwrite(objectWT_I_file, objectWT_I);
 #endif // OUTPUTIMG
 
@@ -356,11 +340,11 @@ int main()
 	DrawLabel(objectDE, objectDE_L);
 	DrawImage(objectDE, image, objectDE_I);
 
-	string  objectDE_B_file = filepath + "\\" + infilename + "_19.0_DE_O(B).png";			//Binary
+	string  objectDE_B_file = filepath + "\\" + infilename + "_18.0_DE_O(B).png";			//Binary
 	cv::imwrite(objectDE_B_file, objectDE);
-	string  objectDE_L_file = filepath + "\\" + infilename + "_19.1_DE_O(L).png";			//Labels
+	string  objectDE_L_file = filepath + "\\" + infilename + "_18.1_DE_O(L).png";			//Labels
 	cv::imwrite(objectDE_L_file, objectDE_L);
-	string  objectDE_I_file = filepath + "\\" + infilename + "_19.2_DE_O(I).png";			//Combine
+	string  objectDE_I_file = filepath + "\\" + infilename + "_18.2_DE_O(I).png";			//Combine
 	cv::imwrite(objectDE_I_file, objectDE_I);
 #endif // OUTPUTIMG
 
@@ -370,7 +354,7 @@ int main()
 	vector<Size2f> ellipse = DrawEllipse(objectDE, objectFE);
 
 #ifdef OUTPUTIMG
-	string  objectFE_B_file = filepath + "\\" + infilename + "_20.0_FE_O(B).png";			//Binary
+	string  objectFE_B_file = filepath + "\\" + infilename + "_19.0_FE_O(B).png";			//Binary
 	cv::imwrite(objectFE_B_file, objectFE);
 #endif // OUTPUTIMG
 
