@@ -266,28 +266,6 @@ void ClearNoise(InputArray _binary, OutputArray _clear)
 	delete[] labeltable;
 }
 
-//void Reconstruct(InputArray _marker, InputArray _mask, OutputArray _hdistance)
-//{
-//	Mat marker = _marker.getMat();
-//
-//	Mat mask = _mask.getMat();
-//
-//	_hdistance.create(mask.size(), CV_32FC1);
-//	Mat hdistance = _hdistance.getMat();
-//
-//	min(marker, mask, hdistance);
-//	dilate(hdistance, hdistance, Mat());
-//	min(hdistance, mask, hdistance);
-//	Mat temp1 = Mat(marker.size(), CV_8UC1);
-//	Mat temp2 = Mat(marker.size(), CV_8UC1);
-//	do {
-//		hdistance.copyTo(temp1);
-//		dilate(hdistance, hdistance, Mat());
-//		min(hdistance, mask, hdistance);
-//		compare(temp1, hdistance, temp2, CV_CMP_NE);
-//	} while (sum(temp2).val[0]);
-//}
-
 void Reconstruct(InputArray _marker, InputArray _mask, OutputArray _hdistance)
 {
 	Mat marker = _marker.getMat();
