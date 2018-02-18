@@ -58,15 +58,14 @@ int main()
 	std::cout << "           - y : ";
 	std::cin >> bPt[3].y;
 
-	std::cout << "Please enter square'd length (mm) : ";
+	std::cout << "Please enter square's length (mm) : ";
 	float rl;
 	std::cin >> rl;
 
-	float pw = (std::sqrt(std::pow(bPt[0].x - bPt[1].x, 2) + std::pow(bPt[0].y - bPt[1].y, 2))
-		+ std::sqrt(std::pow(bPt[2].x - bPt[3].x, 2) + std::pow(bPt[2].y - bPt[3].y, 2))) / 2.0f;
-	float ph = (std::sqrt(std::pow(bPt[0].x - bPt[3].x, 2) + std::pow(bPt[0].y - bPt[3].y, 2))
-		+ std::sqrt(std::pow(bPt[1].x - bPt[2].x, 2) + std::pow(bPt[1].y - bPt[2].y, 2))) / 2.0f;
-	float pl = (pw + ph) / 2.0f;
+	float pl = (std::sqrt(std::pow(bPt[0].x - bPt[1].x, 2) + std::pow(bPt[0].y - bPt[1].y, 2))
+		+ std::sqrt(std::pow(bPt[2].x - bPt[3].x, 2) + std::pow(bPt[2].y - bPt[3].y, 2)))
+		+ (std::sqrt(std::pow(bPt[0].x - bPt[3].x, 2) + std::pow(bPt[0].y - bPt[3].y, 2))
+		+ std::sqrt(std::pow(bPt[1].x - bPt[2].x, 2) + std::pow(bPt[1].y - bPt[2].y, 2))) / 4.0f;
 	Point2f aPt[4] = { cv::Point2f(0, 0), cv::Point2f(pl, 0), cv::Point2f(pl, pl), cv::Point2f(0, pl) };
 
 #ifdef OUTPUTTIME
@@ -107,7 +106,7 @@ int main()
 
 	Mat grayWarp;
 	Mat perspectiveMatrix = getPerspectiveTransform(bPt, aPt);
-	cv::warpPerspective(gray, grayWarp, perspectiveMatrix, Size(pw, ph), INTER_CUBIC);
+	cv::warpPerspective(gray, grayWarp, perspectiveMatrix, Size(pl, pl), INTER_CUBIC);
 
 #ifdef OUTPUTIMG
 	string grayWarp_G_file = filepath + "\\" + infilename + "_1.0_WARP_I(G).png";			//Gray
@@ -126,7 +125,7 @@ int main()
 	time1 = clock();
 #endif // OUTPUTTIME
 
-	int imageMinLength = image.rows < image.cols ? image.rows : image.cols;
+	int imageMinLength = grayWarp.rows < grayWarp.cols ? grayWarp.rows : grayWarp.cols;
 	int ksize = ceil((double)imageMinLength / 10.0);
 	ksize = ksize % 2 ? ksize : ksize + 1;
 	double sigma = ksize / 5;
