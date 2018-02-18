@@ -304,9 +304,9 @@ void DrawImage(InputArray _binary, InputArray _image, OutputArray _combineImg)
 {
 	Mat binary = _binary.getMat();
 
-	Mat image = _image.getMat();
+	Mat gray = _image.getMat();
 
-	_combineImg.create(image.size(), CV_8UC3);
+	_combineImg.create(gray.size(), CV_8UC3);
 	Mat combineImg = _combineImg.getMat();
 
 	for (size_t i = 0; i < binary.rows; ++i) {
@@ -317,9 +317,9 @@ void DrawImage(InputArray _binary, InputArray _image, OutputArray _combineImg)
 				data[1] = 0;
 				data[2] = 0;
 			} else {
-				data[0] = image.at<Vec3b>(i, j)[0];
-				data[1] = image.at<Vec3b>(i, j)[1];
-				data[2] = image.at<Vec3b>(i, j)[2];
+				data[0] = gray.at<uchar>(i, j);
+				data[1] = gray.at<uchar>(i, j);
+				data[2] = gray.at<uchar>(i, j);
 			}
 		}
 	}

@@ -51,9 +51,9 @@ void DrawLabel(InputArray _binary, OutputArray _labelImg, int num = 4);
 
 //Combine Binary Image and Raw Image
 //binary : binary image(8UC1(BW))
-//image : raw image(8UC1/8UC3)
+//gray : gray image(8UC1)
 //combine : combine image(8UC3)
-void DrawImage(InputArray _binary, InputArray _image, OutputArray _combineImg);
+void DrawImage(InputArray _binary, InputArray _gray, OutputArray _combineImg);
 
 //Combine Binary Image and Seed Image
 //binary : binary image(8UC1(BW))
