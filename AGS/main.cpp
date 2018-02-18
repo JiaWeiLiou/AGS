@@ -11,6 +11,7 @@ Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <algorithm>
 
 #define OUTPUTIMG
 #define OUTPUTTIME
@@ -573,13 +574,22 @@ int main()
 	string outputPath = filepath + "\\" + "GrainSize.txt";
 	outfile.open(outputPath, ios::out | ios::trunc);
 
-	float outAxis, wAxis, hAxis;
-	outfile << infilename << ":\t";
+	vector<float> outAxis;
 	for (size_t i = 0; i < ellipse.size(); ++i) {
-		wAxis = ellipse[i].width * rl / pl;
-		hAxis = ellipse[i].height * rl / pl;
-		outAxis = wAxis < hAxis ? wAxis : hAxis;
-		outfile << outAxis << "\t";
+		float wAxis = ellipse[i].width * rl / pl;
+		float hAxis = ellipse[i].height * rl / pl;
+		if (wAxis < hAxis) {
+			outAxis.push_back(wAxis);
+		} else {
+			outAxis.push_back(hAxis);
+		}
+	}
+
+	std::sort(outAxis.begin(), outAxis.end());
+
+	outfile << infilename << ":\t";
+	for (size_t i = 0; i < outAxis.size(); ++i) {
+		outfile << outAxis[i] << "\t";
 	}
 	outfile << endl;
 
