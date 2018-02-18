@@ -13,7 +13,7 @@ Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 #include <ctime>
 #include <algorithm>
 
-#define OUTPUTIMG
+//#define OUTPUTIMG
 #define OUTPUTTIME
 
 int main()
