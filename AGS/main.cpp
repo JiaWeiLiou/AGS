@@ -19,19 +19,20 @@ Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 int main()
 {
 	std::cout << "Please enter image path : ";
-	string infile;
-	std::cin >> infile;
+	string imgfile;
+	std::cin >> imgfile;
 
 	/* Set Output File Name */
 
-	int pos1 = infile.find_last_of('/\\');
-	int pos2 = infile.find_last_of('.');
-	string filepath(infile.substr(0, pos1));							//file path
-	string infilename(infile.substr(pos1 + 1, pos2 - pos1 - 1));		//file name
+	int pos1 = imgfile.find_last_of('/\\');
+	int pos2 = imgfile.find_last_of('.');
+	string filepath(imgfile.substr(0, pos1));							//file path
+	string infilename(imgfile.substr(pos1 + 1, pos2 - pos1 - 1));		//file name
+	string infilefullname(imgfile.substr(pos1 + 1));					//file full name
 
 	/*Read Raw Image*/
 
-	Mat image = cv::imread(infile);			//raw image (8UC3)
+	Mat image = cv::imread(imgfile);			//raw image (8UC3)
 	if (!image.data) { 
 		printf("Oh no! reading image error... \n"); 
 		return false; 
@@ -40,32 +41,30 @@ int main()
 	std::cout << "Image's width  : " << image.cols << endl;
 	std::cout << "Image's height : " << image.rows << endl;
 
-	std::cout << "Please enter four points' pixel coordinate : " << endl;
-	Point2f bPt[4];
-	std::cout << "Top Left   - x : ";
-	std::cin >> bPt[0].x;
-	std::cout << "           - y : ";
-	std::cin >> bPt[0].y;
-	std::cout << "Top Right  - x : ";
-	std::cin >> bPt[1].x;
-	std::cout << "           - y : ";
-	std::cin >> bPt[1].y;
-	std::cout << "Down Right - x : ";
-	std::cin >> bPt[2].x;
-	std::cout << "           - y : ";
-	std::cin >> bPt[2].y;
-	std::cout << "Down Left  - x : ";
-	std::cin >> bPt[3].x;
-	std::cout << "           - y : ";
-	std::cin >> bPt[3].y;
+	ifstream infile;
+	string inputPath = filepath + "\\" + "IMG(PT).txt";
+	infile.open(inputPath, ios::in);
+	if (!infile.is_open()) {
+		cout << "Oh no! reading points error... \n" << endl;
+		return 0;
+	}
 
+	Point2f bPt[4];
+	for (size_t i = 0; i < 4; ++i) {
+		string xp, yp;
+		std::getline(infile, xp, '\t');
+		std::getline(infile, yp, '\t');
+		bPt[i] = Point2f(stof(xp), stof(yp));
+	}
+	infile.close();
+	
 	std::cout << "Please enter square's length (mm) : ";
 	float rl;
 	std::cin >> rl;
 
 	float pl = (std::sqrt(std::pow(bPt[0].x - bPt[1].x, 2) + std::pow(bPt[0].y - bPt[1].y, 2))
-		+ std::sqrt(std::pow(bPt[2].x - bPt[3].x, 2) + std::pow(bPt[2].y - bPt[3].y, 2)))
-		+ (std::sqrt(std::pow(bPt[0].x - bPt[3].x, 2) + std::pow(bPt[0].y - bPt[3].y, 2))
+		+ std::sqrt(std::pow(bPt[2].x - bPt[3].x, 2) + std::pow(bPt[2].y - bPt[3].y, 2))
+		+ std::sqrt(std::pow(bPt[0].x - bPt[3].x, 2) + std::pow(bPt[0].y - bPt[3].y, 2))
 		+ std::sqrt(std::pow(bPt[1].x - bPt[2].x, 2) + std::pow(bPt[1].y - bPt[2].y, 2))) / 4.0f;
 	Point2f aPt[4] = { cv::Point2f(0, 0), cv::Point2f(pl, 0), cv::Point2f(pl, pl), cv::Point2f(0, pl) };
 
@@ -570,8 +569,8 @@ int main()
 	cout << "Fitting Ellipse : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
 #endif // OUTPUTTIME
 
-	fstream outfile;
-	string outputPath = filepath + "\\" + "GrainSize.txt";
+	ofstream outfile;
+	string outputPath = filepath + "\\" + "AGS(PSD).txt";
 	outfile.open(outputPath, ios::out | ios::trunc);
 
 	vector<float> outAxis;
@@ -587,9 +586,12 @@ int main()
 
 	std::sort(outAxis.begin(), outAxis.end());
 
-	outfile << infilename << ":\t";
+	outfile << infilefullname << ":\t";
 	for (size_t i = 0; i < outAxis.size(); ++i) {
-		outfile << outAxis[i] << "\t";
+		outfile << outAxis[i];
+		if (i != outAxis.size() - 1) {
+			outfile << "\t";
+		}
 	}
 	outfile << endl;
 
