@@ -13,7 +13,7 @@ Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 #include <ctime>
 #include <algorithm>
 
-//#define OUTPUTIMG
+#define OUTPUTIMG
 #define OUTPUTTIME
 
 int main()
@@ -58,15 +58,16 @@ int main()
 	}
 	infile.close();
 	
+	int pl = round((std::sqrt(std::pow(bPt[0].x - bPt[1].x, 2) + std::pow(bPt[0].y - bPt[1].y, 2))
+		+ std::sqrt(std::pow(bPt[2].x - bPt[3].x, 2) + std::pow(bPt[2].y - bPt[3].y, 2))
+		+ std::sqrt(std::pow(bPt[0].x - bPt[3].x, 2) + std::pow(bPt[0].y - bPt[3].y, 2))
+		+ std::sqrt(std::pow(bPt[1].x - bPt[2].x, 2) + std::pow(bPt[1].y - bPt[2].y, 2))) / 4.0f);
+	Point2f aPt[4] = { cv::Point2f(0, 0), cv::Point2f(pl, 0), cv::Point2f(pl, pl), cv::Point2f(0, pl) };
+
+	std::cout << "Output of image's size (pixel) : " << pl << endl;
 	std::cout << "Please enter square's length (mm) : ";
 	float rl;
 	std::cin >> rl;
-
-	float pl = (std::sqrt(std::pow(bPt[0].x - bPt[1].x, 2) + std::pow(bPt[0].y - bPt[1].y, 2))
-		+ std::sqrt(std::pow(bPt[2].x - bPt[3].x, 2) + std::pow(bPt[2].y - bPt[3].y, 2))
-		+ std::sqrt(std::pow(bPt[0].x - bPt[3].x, 2) + std::pow(bPt[0].y - bPt[3].y, 2))
-		+ std::sqrt(std::pow(bPt[1].x - bPt[2].x, 2) + std::pow(bPt[1].y - bPt[2].y, 2))) / 4.0f;
-	Point2f aPt[4] = { cv::Point2f(0, 0), cv::Point2f(pl, 0), cv::Point2f(pl, pl), cv::Point2f(0, pl) };
 
 #ifdef OUTPUTTIME
 	time_t time0 = clock();
