@@ -570,33 +570,51 @@ int main()
 	cout << "Fitting Ellipse : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
 #endif // OUTPUTTIME
 
-	ofstream outfile;
-	string outputPath = filepath + "\\" + "AGS(PSD).txt";
-	outfile.open(outputPath, ios::out | ios::trunc);
+	ofstream outfileS, outfileL;
+	string outputPathS = filepath + "\\" + "AGS_S(PSD).txt";
+	string outputPathL = filepath + "\\" + "AGS_L(PSD).txt";
+	outfileS.open(outputPathS, ios::out | ios::trunc);
+	outfileL.open(outputPathL, ios::out | ios::trunc);
 
-	vector<float> outAxis;
+	vector<float> outAxisS, outAxisL;
 	for (size_t i = 0; i < ellipse.size(); ++i) {
 		float wAxis = ellipse[i].width * rl / pl;
 		float hAxis = ellipse[i].height * rl / pl;
 		if (wAxis < hAxis) {
-			outAxis.push_back(wAxis);
+			outAxisS.push_back(wAxis);
+			outAxisL.push_back(hAxis);
 		} else {
-			outAxis.push_back(hAxis);
+			outAxisS.push_back(hAxis);
+			outAxisL.push_back(wAxis);
 		}
 	}
 
-	std::sort(outAxis.begin(), outAxis.end());
+	std::sort(outAxisS.begin(), outAxisS.end());
+	std::sort(outAxisL.begin(), outAxisL.end());
 
-	outfile << infilefullname << ":\t";
-	for (size_t i = 0; i < outAxis.size(); ++i) {
-		outfile << outAxis[i];
-		if (i != outAxis.size() - 1) {
-			outfile << "\t";
+	outfileS << infilefullname << ":\t";
+	outfileL << infilefullname << ":\t";
+
+	for (size_t i = 0; i < outAxisS.size(); ++i) {
+		outfileS << outAxisS[i];
+		if (i != outAxisS.size() - 1) {
+			outfileS << "\t";
 		}
 	}
-	outfile << endl;
+	
 
-	outfile.close();
+	for (size_t i = 0; i < outAxisL.size(); ++i) {
+		outfileL << outAxisL[i];
+		if (i != outAxisL.size() - 1) {
+			outfileL << "\t";
+		}
+	}
+
+	outfileS << endl;
+	outfileL << endl;
+
+	outfileS.close();
+	outfileL.close();
 
 #ifdef OUTPUTTIME
 	time2 = clock();
