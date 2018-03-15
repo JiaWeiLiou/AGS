@@ -348,7 +348,7 @@ void DrawSeed(InputArray _binary, InputArray _seed, OutputArray _combineImg)
 	}
 }
 
-void DrawEllipse(InputArray _object, OutputArray _ellipseImg, vector<Size2f> ellipse_param, vector<Size2f> square_param)
+void DrawEllipse(InputArray _object, OutputArray _ellipseImg, vector<Size2f> &ellipse_param, vector<Size2f> &square_param)
 {
 	Mat object = _object.getMat();
 
@@ -419,7 +419,7 @@ void DrawEllipse(InputArray _object, OutputArray _ellipseImg, vector<Size2f> ell
 				}
 			}
 
-			Size2f param = { length, sqrt((float)(pow(pointset2[i][2].x - pointset2[i][0].x, 2) + pow(pointset2[i][3].y - pointset2[i][1].y, 2))) };
+			Size2f param = Size2f(length, sqrt((float)(pow(pointset2[i][2].x - pointset2[i][0].x, 2) + pow(pointset2[i][3].y - pointset2[i][1].y, 2))));
 			square_param.push_back(param);
 		}
 	}
