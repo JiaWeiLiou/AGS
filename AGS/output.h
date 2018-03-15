@@ -64,7 +64,8 @@ void DrawSeed(InputArray _binary, InputArray _seed, OutputArray _combineImg);
 //Fitting and Draw Ellipse
 //object : object image(8UC1(BW))
 //ellipse : ellipse image(8UC1(BW))
-//return : long and short axis of ellipse
-vector<Size2f> DrawEllipse(InputArray _object, OutputArray _ellipseImg);
+//ellipse_param : long and short axis of ellipse
+//square_param : max length, diagonal
+void DrawEllipse(InputArray _object, OutputArray _ellipseImg, vector<Size2f> ellipse_param, vector<Size2f> square_param);
 
 #endif // OUTPUT_H

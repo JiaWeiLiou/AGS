@@ -13,7 +13,7 @@ Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 #include <ctime>
 #include <algorithm>
 
-#define OUTPUTIMG
+//#define OUTPUTIMG
 #define OUTPUTTIME
 
 int main()
@@ -559,7 +559,9 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat objectFE;		//8UC1(BW)
-	vector<Size2f> ellipse = DrawEllipse(objectDE, objectFE);
+	vector<Size2f> ellipse;
+	vector<Size2f> square;
+	DrawEllipse(objectDE, objectFE, ellipse, square);
 
 #ifdef OUTPUTIMG
 	string  objectFE_B_file = filepath + "\\" + infilename + "_20.0_FE_O(B).png";			//Binary
@@ -570,35 +572,46 @@ int main()
 	cout << "Fitting Ellipse : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
 #endif // OUTPUTTIME
 
-	ofstream outfileS, outfileL;
-	string outputPathS = filepath + "\\" + "AGS_S(PSD).txt";
+	ofstream outfileM, outfileL, outfileSL, outfileSD;
+	string outputPathM = filepath + "\\" + "AGS_M(PSD).txt";
 	string outputPathL = filepath + "\\" + "AGS_L(PSD).txt";
-	outfileS.open(outputPathS, ios::out | ios::trunc);
+	string outputPathSL = filepath + "\\" + "AGS_SL(PSD).txt";
+	string outputPathSD = filepath + "\\" + "AGS_SD(PSD).txt";
+	outfileM.open(outputPathM, ios::out | ios::trunc);
 	outfileL.open(outputPathL, ios::out | ios::trunc);
+	outfileSL.open(outputPathSL, ios::out | ios::trunc);
+	outfileSD.open(outputPathSD, ios::out | ios::trunc);
 
-	vector<float> outAxisS, outAxisL;
+	vector<float> outAxisM, outAxisL, outAxisSL, outAxisSD;
 	for (size_t i = 0; i < ellipse.size(); ++i) {
 		float wAxis = ellipse[i].width * rl / pl;
 		float hAxis = ellipse[i].height * rl / pl;
 		if (wAxis < hAxis) {
-			outAxisS.push_back(wAxis);
+			outAxisM.push_back(wAxis);
 			outAxisL.push_back(hAxis);
 		} else {
-			outAxisS.push_back(hAxis);
+			outAxisM.push_back(hAxis);
 			outAxisL.push_back(wAxis);
 		}
+
+		outAxisSL.push_back(square[i].width);
+		outAxisSD.push_back(square[i].height);
 	}
 
-	std::sort(outAxisS.begin(), outAxisS.end());
+	std::sort(outAxisM.begin(), outAxisM.end());
 	std::sort(outAxisL.begin(), outAxisL.end());
+	std::sort(outAxisSL.begin(), outAxisSL.end());
+	std::sort(outAxisSD.begin(), outAxisSD.end());
 
-	outfileS << infilefullname << ":\t";
+	outfileM << infilefullname << ":\t";
 	outfileL << infilefullname << ":\t";
+	outfileSL << infilefullname << ":\t";
+	outfileSD << infilefullname << ":\t";
 
-	for (size_t i = 0; i < outAxisS.size(); ++i) {
-		outfileS << outAxisS[i];
-		if (i != outAxisS.size() - 1) {
-			outfileS << "\t";
+	for (size_t i = 0; i < outAxisM.size(); ++i) {
+		outfileM << outAxisM[i];
+		if (i != outAxisM.size() - 1) {
+			outfileM << "\t";
 		}
 	}
 	
@@ -610,11 +623,29 @@ int main()
 		}
 	}
 
-	outfileS << endl;
-	outfileL << endl;
+	for (size_t i = 0; i < outAxisSL.size(); ++i) {
+		outfileSL << outAxisSL[i];
+		if (i != outAxisSL.size() - 1) {
+			outfileSL << "\t";
+		}
+	}
 
-	outfileS.close();
+	for (size_t i = 0; i < outAxisSD.size(); ++i) {
+		outfileSD << outAxisSD[i];
+		if (i != outAxisSD.size() - 1) {
+			outfileSD << "\t";
+		}
+	}
+
+	outfileM << endl;
+	outfileL << endl;
+	outfileSL << endl;
+	outfileSD << endl;
+
+	outfileM.close();
 	outfileL.close();
+	outfileSL.close();
+	outfileSD.close();
 
 #ifdef OUTPUTTIME
 	time2 = clock();
