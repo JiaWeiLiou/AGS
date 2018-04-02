@@ -13,7 +13,7 @@ Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 #include <ctime>
 #include <algorithm>
 
-//#define OUTPUTIMG
+#define OUTPUTIMG
 #define OUTPUTTIME
 
 int main()
@@ -127,9 +127,9 @@ int main()
 #endif // OUTPUTTIME
 
 	int imageMinLength = grayWarp.rows < grayWarp.cols ? grayWarp.rows : grayWarp.cols;
-	int ksize = ceil((double)imageMinLength / 10.0);
+	int ksize = ceil((double)imageMinLength / 5.0);
 	ksize = ksize % 2 ? ksize : ksize + 1;
-	double sigma = ksize / 5;
+	double sigma = ksize / 4.29;
 
 	Mat grayBlur;			//8UC1
 	cv::GaussianBlur(grayWarp, grayBlur, Size(ksize, ksize), sigma, sigma);
