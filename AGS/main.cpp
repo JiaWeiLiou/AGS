@@ -178,7 +178,8 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat grayTH;			//8UC1(BW)
-	OtsuThreshold(grayDIV, grayTH);
+	/*OtsuThreshold(grayDIV, grayTH);*/
+	threshold(grayDIV, grayTH, 254, 255, THRESH_BINARY);
 
 #ifdef OUTPUTIMG
 	string grayTH_B_file = filepath + "\\" + infilename + "_4.0_TH_I(B).png";			//Binary
