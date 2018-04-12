@@ -178,8 +178,8 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat grayTH;			//8UC1(BW)
-	/*OtsuThreshold(grayDIV, grayTH);*/
-	threshold(grayDIV, grayTH, 254, 255, THRESH_BINARY);
+	OtsuThreshold(grayDIV, grayTH);
+	//threshold(grayDIV, grayTH, 254, 255, THRESH_BINARY);
 
 #ifdef OUTPUTIMG
 	string grayTH_B_file = filepath + "\\" + infilename + "_4.0_TH_I(B).png";			//Binary
@@ -385,7 +385,7 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat objectOpen;			//8UC1(BW)
-	Mat elementO = (Mat_<uchar>(3, 3) << 1, 1, 1, 1, 1, 1, 1, 1, 1);
+	Mat elementO = (Mat_<uchar>(5, 5) << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
 	cv::morphologyEx(objectCOM, objectOpen, MORPH_OPEN, elementO);
 
 #ifdef OUTPUTIMG

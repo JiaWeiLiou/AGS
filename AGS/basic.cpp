@@ -17,9 +17,16 @@ void DivideArea(InputArray _gray, InputArray _blur, OutputArray _divide)
 	_divide.create(gray.size(), CV_8UC1);
 	Mat divide = _divide.getMat();
 
+	Scalar blurmean = cv::mean(blur);
+
+	double mean = blurmean[0];
+
 	for (size_t i = 0; i < gray.rows; ++i) {
 		for (size_t j = 0; j < gray.cols; ++j) {
-			divide.at<uchar>(i, j) = (double)gray.at<uchar>(i, j) / (double)blur.at<uchar>(i, j) > 1.0f ? 255 : ((double)gray.at<uchar>(i, j) / (double)blur.at<uchar>(i, j)) * 255;
+			double div = (double)gray.at<uchar>(i, j) - (double)blur.at<uchar>(i, j) + mean;
+			div = div < 0 ? 0 : div;
+			div = div > 255 ? 255 : div;
+			divide.at<uchar>(i, j) = div;
 		}
 	}
 }
