@@ -27,6 +27,11 @@ using namespace cv;
 #define LABEL_UNPROCESSED -4
 
 //Remove Ambient Light for Area
+//image : raw image (8UC3)
+//gray : gray image (8UC1)
+void RGBToGray(InputArray _image, OutputArray _gray);
+
+//Remove Ambient Light for Area
 //gray : gray image (8UC1)
 //blur : blur image (8UC1)
 //divide : remove ambient light image (8UC1)

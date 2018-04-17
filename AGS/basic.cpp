@@ -8,6 +8,19 @@ Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 
 #include "basic.h"
 
+void RGBToGray(InputArray _image, OutputArray _gray)
+{
+	Mat image = _image.getMat();
+	_gray.create(image.size(), CV_8UC1);
+	Mat gray = _gray.getMat();
+
+	for (size_t i = 0; i < gray.rows; ++i) {
+		for (size_t j = 0; j < gray.cols; ++j) {
+			gray.at<uchar>(i, j) = ((double)image.at<Vec3b>(i, j)[0] + (double)image.at<Vec3b>(i, j)[1] + (double)image.at<Vec3b>(i, j)[2]) / 3;
+		}
+	}
+}
+
 void DivideArea(InputArray _gray, InputArray _blur, OutputArray _divide)
 {
 	Mat gray = _gray.getMat();

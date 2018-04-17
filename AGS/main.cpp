@@ -83,7 +83,7 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat gray;			//8UC1
-	cv::cvtColor(image, gray, CV_BGR2GRAY);
+	RGBToGray(image, gray);
 
 #ifdef OUTPUTIMG
 	Mat gray_C;			//output(8UC3)
