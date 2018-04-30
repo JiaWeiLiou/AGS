@@ -91,6 +91,97 @@ void OtsuThreshold(InputArray _gray, OutputArray _binary)
 	cv::threshold(gray, binary, th, 255, THRESH_BINARY);
 }
 
+void KittlerThreshold(InputArray _gray, OutputArray _binary)
+{
+	Mat gray = _gray.getMat();
+
+	_binary.create(gray.size(), CV_8UC1);
+	Mat binary = _binary.getMat();
+
+	double *hist = new double[256]();
+	for (size_t i = 0; i < gray.rows; ++i) {
+		for (size_t j = 0; j < gray.cols; ++j) {
+			++hist[gray.at<uchar>(i, j)];
+		}
+	}
+
+	for (size_t i = 0; i < 256; ++i) {
+		hist[i] = hist[i] / (gray.rows*gray.cols);
+	}
+	hist[0] = hist[1];
+
+	double *J = new double[256]();
+	for (size_t i = 0; i < 256; ++i) {
+		J[i] = DBL_MAX;
+	}
+
+	for (size_t T = 0; T < 256; ++T) {
+
+		/* P1. P2 */
+
+		double P1 = 0;
+		for (size_t i = 0; i < T; ++i) {
+			P1 += hist[i];
+		}
+
+		double P2 = 0;
+		for (size_t i = T; i < 256; ++i) {
+			P2 += hist[i];
+		}
+
+		if (P1 > 0 & P2 > 0) {
+
+			/* Mu1. Sigma1 */
+
+			double sumMu1 = 0;
+			for (size_t i = 0; i < T; ++i) {
+				sumMu1 += hist[i] * i;
+			}
+			double mu1 = sumMu1 / P1;
+
+			double sumSigma1 = 0;
+			for (size_t i = 0; i < T; ++i) {
+				sumSigma1 += hist[i] * pow(i - mu1, 2);
+			}
+			double sigma1 = sqrt(sumSigma1 / P1);
+
+			/* Mu2. Sigma2 */
+
+			double sumMu2 = 0;
+			for (size_t i = T; i < 256; ++i) {
+				sumMu2 += hist[i] * i;
+			}
+			double mu2 = sumMu2 / P2;
+
+			double sumSigma2 = 0;
+			for (size_t i = T; i < 256; ++i) {
+				sumSigma2 += hist[i] * pow(i - mu2, 2);
+			}
+			double sigma2 = sqrt(sumSigma2 / P2);
+
+			/* J */
+
+			if ((sigma1 > 0) & (sigma2 > 0)) {
+				J[T] = 1 + 2 * (P1 * log(sigma1) + P2 * log(sigma2)) - 2 * (P1 * log(P1) + P2 * log(P2));
+			}
+		}
+	}
+
+	double min = DBL_MAX;
+	char th = 0;
+	for (size_t i = 0; i < 256; ++i) {
+		if (J[i] < min) {
+			th = i;
+			min = J[i];
+		}
+	}
+
+	delete[] hist;
+	delete[] J;
+
+	cv::threshold(gray, binary, th, 255, THRESH_BINARY);
+}
+
 void Gradient(InputArray _gray, OutputArray _gradient)
 {
 	Mat gray = _gray.getMat();

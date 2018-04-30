@@ -13,6 +13,7 @@ Copyright    [ Copyleft(c) 2018-present LaDF, CE-Hydrolic, NTU, Taiwan ]
 #include <vector>
 #include <queue>
 #include <cmath>
+#include <limits>
 
 using namespace std;
 using namespace cv;
