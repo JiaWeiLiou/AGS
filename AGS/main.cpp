@@ -69,6 +69,10 @@ int main()
 	float rl;
 	std::cin >> rl;
 
+	std::cout << "Please enter max rock size (pixel) : ";
+	float mumax;
+	std::cin >> mumax;
+
 #ifdef OUTPUTTIME
 	time_t time0 = clock();
 	time_t time1, time2;
@@ -126,8 +130,7 @@ int main()
 	time1 = clock();
 #endif // OUTPUTTIME
 
-	int imageMinLength = grayWarp.rows < grayWarp.cols ? grayWarp.rows : grayWarp.cols;
-	int ksize = ceil((double)imageMinLength / 5.0);
+	int ksize = round(mumax);
 	ksize = ksize % 2 ? ksize : ksize + 1;
 	double sigma = ksize / 4.29;
 
