@@ -130,7 +130,7 @@ int main()
 	time1 = clock();
 #endif // OUTPUTTIME
 
-	int ksize = round(mumax);
+	int ksize = round(mumax * 5);
 	ksize = ksize % 2 ? ksize : ksize + 1;
 	double sigma = ksize / 4.29;
 
@@ -181,7 +181,7 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat grayTH;			//8UC1(BW)
-	KittlerThreshold(grayDIV, grayTH);
+	KittlerThresholdArea(grayDIV, grayTH);
 	//OtsuThreshold(grayDIV, grayTH);
 	//threshold(grayDIV, grayTH, 254, 255, THRESH_BINARY);
 
@@ -228,7 +228,7 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat gradm;			//8UC1
-	Gradient(grayWarp, gradm);
+	Gradient(grayDIV, gradm);
 
 #ifdef OUTPUTIMG
 	Mat gradm_G, gradm_C;			//output(8UC1¡B8UC3)
@@ -245,52 +245,52 @@ int main()
 	cout << "Calculate Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
 #endif // OUTPUTTIME
 
-	/* Bluring Image Gradient */
-
-#ifdef OUTPUTTIME
-	time1 = clock();
-#endif // OUTPUTTIME
-
-	Mat gradmBlur;			//8UC1
-	cv::GaussianBlur(gradm, gradmBlur, Size(5, 5), 1, 1);
-
-#ifdef OUTPUTIMG
-	Mat gradmBlur_C;			//output(8UC3)
-	DrawColorBar(gradmBlur, gradmBlur_C);
-
-	string gradmBlur_G_file = filepath + "\\" + infilename + "_7.0_BLUR_M(G).png";			//Gray
-	cv::imwrite(gradmBlur_G_file, gradmBlur);
-	string gradmBlur_C_file = filepath + "\\" + infilename + "_7.1_BLUR_R(C).png";			//Color
-	cv::imwrite(gradmBlur_C_file, gradmBlur_C);
-#endif // OUTPUTIMG
-#ifdef OUTPUTTIME
-	time2 = clock();
-	cout << "Bluring Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
-#endif // OUTPUTTIME
-
-	/* Remove Ambient Light for Image Gradient */
-
-#ifdef OUTPUTTIME
-	time1 = clock();
-#endif // OUTPUTTIME
-
-	Mat gradmDIV;			//8UC1
-	DivideLine(gradm, gradmBlur, gradmDIV);
-
-#ifdef OUTPUTIMG
-	Mat gradmDIV_G, gradmDIV_C;			//output(8UC1¡B8UC3)
-	DrawGrayBar(gradmDIV, gradmDIV_G);
-	DrawColorBar(gradmDIV, gradmDIV_C);
-
-	string gradmDIV_G_file = filepath + "\\" + infilename + "_8.0_DIV_M(G).png";		//Gray
-	cv::imwrite(gradmDIV_G_file, gradmDIV_G);
-	string gradmDIV_C_file = filepath + "\\" + infilename + "_8.1_DIV_M(C).png";		//Color
-	cv::imwrite(gradmDIV_C_file, gradmDIV_C);
-#endif // OUTPUTIMG
-#ifdef OUTPUTTIME
-	time2 = clock();
-	cout << "Remove Ambient Light for Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
-#endif // OUTPUTTIME
+//	/* Bluring Image Gradient */
+//
+//#ifdef OUTPUTTIME
+//	time1 = clock();
+//#endif // OUTPUTTIME
+//
+//	Mat gradmBlur;			//8UC1
+//	cv::GaussianBlur(gradm, gradmBlur, Size(5, 5), 1, 1);
+//
+//#ifdef OUTPUTIMG
+//	Mat gradmBlur_C;			//output(8UC3)
+//	DrawColorBar(gradmBlur, gradmBlur_C);
+//
+//	string gradmBlur_G_file = filepath + "\\" + infilename + "_7.0_BLUR_M(G).png";			//Gray
+//	cv::imwrite(gradmBlur_G_file, gradmBlur);
+//	string gradmBlur_C_file = filepath + "\\" + infilename + "_7.1_BLUR_R(C).png";			//Color
+//	cv::imwrite(gradmBlur_C_file, gradmBlur_C);
+//#endif // OUTPUTIMG
+//#ifdef OUTPUTTIME
+//	time2 = clock();
+//	cout << "Bluring Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+//#endif // OUTPUTTIME
+//
+//	/* Remove Ambient Light for Image Gradient */
+//
+//#ifdef OUTPUTTIME
+//	time1 = clock();
+//#endif // OUTPUTTIME
+//
+//	Mat gradmDIV;			//8UC1
+//	DivideLine(gradm, gradmBlur, gradmDIV);
+//
+//#ifdef OUTPUTIMG
+//	Mat gradmDIV_G, gradmDIV_C;			//output(8UC1¡B8UC3)
+//	DrawGrayBar(gradmDIV, gradmDIV_G);
+//	DrawColorBar(gradmDIV, gradmDIV_C);
+//
+//	string gradmDIV_G_file = filepath + "\\" + infilename + "_8.0_DIV_M(G).png";		//Gray
+//	cv::imwrite(gradmDIV_G_file, gradmDIV_G);
+//	string gradmDIV_C_file = filepath + "\\" + infilename + "_8.1_DIV_M(C).png";		//Color
+//	cv::imwrite(gradmDIV_C_file, gradmDIV_C);
+//#endif // OUTPUTIMG
+//#ifdef OUTPUTTIME
+//	time2 = clock();
+//	cout << "Remove Ambient Light for Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+//#endif // OUTPUTTIME
 
 	/* Binary Image Gradient */
 
@@ -299,7 +299,8 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat gradmHT;			//8UC1(BW)
-	cv::threshold(gradmDIV, gradmHT, 1, 255, THRESH_BINARY);
+	//cv::threshold(gradmDIV, gradmHT, 1, 255, THRESH_BINARY);
+	KittlerThresholdLine(gradm, gradmHT);
 
 #ifdef OUTPUTIMG
 	string gradmHT_B_file = filepath + "\\" + infilename + "_9.0_HT_M(B).png";			//Binary

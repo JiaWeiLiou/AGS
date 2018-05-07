@@ -42,10 +42,15 @@ void DivideArea(InputArray _gray, InputArray _blur, OutputArray _divide);
 //binary : binary image (8UC1(BW))
 void OtsuThreshold(InputArray _gray, OutputArray _binary);
 
-//Kittler Threshold
+//Kittler Threshold for Area
 //gray : gray image (8UC1)
 //binary : binary image (8UC1(BW))
-void KittlerThreshold(InputArray _gray, OutputArray _binary);
+void KittlerThresholdArea(InputArray _gray, OutputArray _binary);
+
+//Kittler Threshold for Line
+//gray : gray image (8UC1)
+//binary : binary image (8UC1(BW))
+void KittlerThresholdLine(InputArray _gray, OutputArray _binary);
 
 //Calculate Image Gradient
 //gray : gray image(8UC1)
