@@ -320,6 +320,26 @@ void DivideLine(InputArray _gradient, InputArray _blur, OutputArray _divide)
 	}
 }
 
+void DivideLineBinary(InputArray _gradient, InputArray _blur, OutputArray _divide)
+{
+	Mat gradient = _gradient.getMat();
+
+	Mat blur = _blur.getMat();
+
+	_divide.create(gradient.size(), CV_8UC1);
+	Mat divide = _divide.getMat();
+
+	for (size_t i = 0; i < gradient.rows; ++i) {
+		for (size_t j = 0; j < gradient.cols; ++j) {
+			if (blur.at<uchar>(i, j) >= gradient.at<uchar>(i, j)) {
+				divide.at<uchar>(i, j) = 0;
+			} else {
+				divide.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+}
+
 void HysteresisCut(InputArray _binary, InputArray _area, OutputArray _line)
 {
 	Mat binary = _binary.getMat();
@@ -345,7 +365,7 @@ void HysteresisCut(InputArray _binary, InputArray _area, OutputArray _line)
 	}
 
 	Mat labelImg;
-	int labelNum = bwlabel(MT, labelImg, 8) + 1;	// include label 0
+	int labelNum = bwlabel(MT, labelImg, 4) + 1;	// include label 0
 	int* labeltable = new int[labelNum]();		// initialize label table with zero  
 
 	int B, C, D, E, F, G, H, I;

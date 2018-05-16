@@ -130,9 +130,9 @@ int main()
 	time1 = clock();
 #endif // OUTPUTTIME
 
-	int ksize = round(mumax * 5);
+	int ksize = round(mumax * 6);
 	ksize = ksize % 2 ? ksize : ksize + 1;
-	double sigma = ksize / 4.29;
+	double sigma = ksize / 6.07;
 
 	Mat grayBlur;			//8UC1
 	cv::GaussianBlur(grayWarp, grayBlur, Size(ksize, ksize), sigma, sigma);
@@ -228,7 +228,7 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat gradm;			//8UC1
-	Gradient(grayDIV, gradm);
+	Gradient(grayWarp, gradm);
 
 #ifdef OUTPUTIMG
 	Mat gradm_G, gradm_C;			//output(8UC1¡B8UC3)
@@ -245,29 +245,30 @@ int main()
 	cout << "Calculate Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
 #endif // OUTPUTTIME
 
-//	/* Bluring Image Gradient */
-//
-//#ifdef OUTPUTTIME
-//	time1 = clock();
-//#endif // OUTPUTTIME
-//
-//	Mat gradmBlur;			//8UC1
-//	cv::GaussianBlur(gradm, gradmBlur, Size(5, 5), 1, 1);
-//
-//#ifdef OUTPUTIMG
-//	Mat gradmBlur_C;			//output(8UC3)
-//	DrawColorBar(gradmBlur, gradmBlur_C);
-//
-//	string gradmBlur_G_file = filepath + "\\" + infilename + "_7.0_BLUR_M(G).png";			//Gray
-//	cv::imwrite(gradmBlur_G_file, gradmBlur);
-//	string gradmBlur_C_file = filepath + "\\" + infilename + "_7.1_BLUR_R(C).png";			//Color
-//	cv::imwrite(gradmBlur_C_file, gradmBlur_C);
-//#endif // OUTPUTIMG
-//#ifdef OUTPUTTIME
-//	time2 = clock();
-//	cout << "Bluring Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
-//#endif // OUTPUTTIME
-//
+	/* Bluring Image Gradient */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
+
+	Mat gradmBlur;			//8UC1
+	// cv::GaussianBlur(gradm, gradmBlur, Size(5, 5), 1, 1);
+	blur(gradm, gradmBlur, Size(5, 5));
+
+#ifdef OUTPUTIMG
+	Mat gradmBlur_C;			//output(8UC3)
+	DrawColorBar(gradmBlur, gradmBlur_C);
+
+	string gradmBlur_G_file = filepath + "\\" + infilename + "_7.0_BLUR_M(G).png";			//Gray
+	cv::imwrite(gradmBlur_G_file, gradmBlur);
+	string gradmBlur_C_file = filepath + "\\" + infilename + "_7.1_BLUR_R(C).png";			//Color
+	cv::imwrite(gradmBlur_C_file, gradmBlur_C);
+#endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Bluring Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
+
 //	/* Remove Ambient Light for Image Gradient */
 //
 //#ifdef OUTPUTTIME
@@ -291,24 +292,42 @@ int main()
 //	time2 = clock();
 //	cout << "Remove Ambient Light for Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
 //#endif // OUTPUTTIME
+//
+//	/* Binary Image Gradient */
+//
+//#ifdef OUTPUTTIME
+//	time1 = clock();
+//#endif // OUTPUTTIME
+//
+//	Mat gradmHT;			//8UC1(BW)
+//	cv::threshold(gradmDIV, gradmHT, 1, 255, THRESH_BINARY);
+//	//KittlerThresholdLine(gradm, gradmHT);
+//
+//#ifdef OUTPUTIMG
+//	string gradmHT_B_file = filepath + "\\" + infilename + "_9.0_HT_M(B).png";			//Binary
+//	cv::imwrite(gradmHT_B_file, gradmHT);
+//#endif // OUTPUTIMG
+//#ifdef OUTPUTTIME
+//	time2 = clock();
+//	cout << "Binary Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+//#endif // OUTPUTTIME
 
-	/* Binary Image Gradient */
+	/* Remove Ambient Light And Binary for Image Gradient */
 
 #ifdef OUTPUTTIME
 	time1 = clock();
 #endif // OUTPUTTIME
 
-	Mat gradmHT;			//8UC1(BW)
-	//cv::threshold(gradmDIV, gradmHT, 1, 255, THRESH_BINARY);
-	KittlerThresholdLine(gradm, gradmHT);
+	Mat gradmDB;			//8UC1
+	DivideLineBinary(gradm, gradmBlur, gradmDB);
 
 #ifdef OUTPUTIMG
-	string gradmHT_B_file = filepath + "\\" + infilename + "_9.0_HT_M(B).png";			//Binary
-	cv::imwrite(gradmHT_B_file, gradmHT);
+	string gradmDB_B_file = filepath + "\\" + infilename + "_8.0_DB_M(B).png";			//Binary
+	cv::imwrite(gradmDB_B_file, gradmDB);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
 	time2 = clock();
-	cout << "Binary Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+	cout << "Remove Ambient Light And Binary for Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
 #endif // OUTPUTTIME
 
 	/* Hysteresis Cut Binary Image to Line by Area */
@@ -318,10 +337,10 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat lineHC;			//8UC1(BW)
-	HysteresisCut(gradmHT, area, lineHC);
+	HysteresisCut(gradmDB, area, lineHC);
 
 #ifdef OUTPUTIMG
-	string lineHC_B_file = filepath + "\\" + infilename + "_10.0_HC_L(B).png";			//Binary
+	string lineHC_B_file = filepath + "\\" + infilename + "_9.0_HC_L(B).png";			//Binary
 	cv::imwrite(lineHC_B_file, lineHC);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
@@ -343,11 +362,11 @@ int main()
 	DrawLabel(line, line_L);
 	DrawImage(line, grayWarp, line_I);
 
-	string line_B_file = filepath + "\\" + infilename + "_11.0_LINE(B).png";			//Binary
+	string line_B_file = filepath + "\\" + infilename + "_10.0_LINE(B).png";			//Binary
 	cv::imwrite(line_B_file, line);
-	string line_L_file = filepath + "\\" + infilename + "_11.1_LINE(L).png";			//Labels
+	string line_L_file = filepath + "\\" + infilename + "_10.1_LINE(L).png";			//Labels
 	cv::imwrite(line_L_file, line_L);
-	string line_I_file = filepath + "\\" + infilename + "_11.2_LINE(I).png";			//Combine
+	string line_I_file = filepath + "\\" + infilename + "_10.2_LINE(I).png";			//Combine
 	cv::imwrite(line_I_file, line_I);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
@@ -371,11 +390,11 @@ int main()
 	DrawLabel(objectCOM, objectCOM_L);
 	DrawImage(objectCOM, grayWarp, objectCOM_I);
 
-	string  objectCOM_B_file = filepath + "\\" + infilename + "_12.0_COM_O(B).png";			//Binary
+	string  objectCOM_B_file = filepath + "\\" + infilename + "_11.0_COM_O(B).png";			//Binary
 	cv::imwrite(objectCOM_B_file, objectCOM);
-	string  objectCOM_L_file = filepath + "\\" + infilename + "_12.1_COM_O(L).png";			//Labels
+	string  objectCOM_L_file = filepath + "\\" + infilename + "_11.1_COM_O(L).png";			//Labels
 	cv::imwrite(objectCOM_L_file, objectCOM_L);
-	string  objectCOM_I_file = filepath + "\\" + infilename + "_12.2_COM_O(I).png";			//Combine
+	string  objectCOM_I_file = filepath + "\\" + infilename + "_11.2_COM_O(I).png";			//Combine
 	cv::imwrite(objectCOM_I_file, objectCOM_I);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
@@ -398,11 +417,11 @@ int main()
 	DrawLabel(objectOpen, objectOpen_L);
 	DrawImage(objectOpen, grayWarp, objectOpen_I);
 
-	string  objectOpen_B_file = filepath + "\\" + infilename + "_13.0_OPEN_O(B).png";			//Binary
+	string  objectOpen_B_file = filepath + "\\" + infilename + "_12.0_OPEN_O(B).png";			//Binary
 	cv::imwrite(objectOpen_B_file, objectOpen);
-	string  objectOpen_L_file = filepath + "\\" + infilename + "_13.1_OPEN_O(L).png";			//Labels
+	string  objectOpen_L_file = filepath + "\\" + infilename + "_12.1_OPEN_O(L).png";			//Labels
 	cv::imwrite(objectOpen_L_file, objectOpen_L);
-	string  objectOpen_I_file = filepath + "\\" + infilename + "_13.2_OPEN_O(I).png";			//Combine
+	string  objectOpen_I_file = filepath + "\\" + infilename + "_12.2_OPEN_O(I).png";			//Combine
 	cv::imwrite(objectOpen_I_file, objectOpen_I);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
@@ -424,11 +443,11 @@ int main()
 	DrawLabel(objectCN, objectCN_L);
 	DrawImage(objectCN, grayWarp, objectCN_I);
 
-	string  objectCN_B_file = filepath + "\\" + infilename + "_14.0_CN_O(B).png";			//Binary
+	string  objectCN_B_file = filepath + "\\" + infilename + "_13.0_CN_O(B).png";			//Binary
 	cv::imwrite(objectCN_B_file, objectCN);
-	string  objectCN_L_file = filepath + "\\" + infilename + "_14.1_CN_O(L).png";			//Labels
+	string  objectCN_L_file = filepath + "\\" + infilename + "_13.1_CN_O(L).png";			//Labels
 	cv::imwrite(objectCN_L_file, objectCN_L);
-	string  objectCN_I_file = filepath + "\\" + infilename + "_14.2_CN_O(I).png";			//Combine
+	string  objectCN_I_file = filepath + "\\" + infilename + "_13.2_CN_O(I).png";			//Combine
 	cv::imwrite(objectCN_I_file, objectCN_I);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
@@ -452,9 +471,9 @@ int main()
 	DrawGrayBar(objectDT, objectDT_G);
 	DrawColorBar(objectDT, objectDT_C);
 
-	string objectDT_G_file = filepath + "\\" + infilename + "_15.0_DT_O(G).png";			//Gray
+	string objectDT_G_file = filepath + "\\" + infilename + "_14.0_DT_O(G).png";			//Gray
 	cv::imwrite(objectDT_G_file, objectDT_G);
-	string objectDT_C_file = filepath + "\\" + infilename + "_15.1_DT_O(C).png";			//Color
+	string objectDT_C_file = filepath + "\\" + infilename + "_14.1_DT_O(C).png";			//Color
 	cv::imwrite(objectDT_C_file, objectDT_C);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
@@ -475,7 +494,7 @@ int main()
 	Mat objectEM_S;		//output(8UC1)
 	DrawSeed(objectCN, objectEM, objectEM_S);
 
-	string  objectEM_S_file = filepath + "\\" + infilename + "_16.0_EM_O(S).png";			//Seed
+	string  objectEM_S_file = filepath + "\\" + infilename + "_15.0_EM_O(S).png";			//Seed
 	cv::imwrite(objectEM_S_file, objectEM_S);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
@@ -496,7 +515,7 @@ int main()
 	Mat objectAS_S;		//output(8UC1)
 	DrawSeed(objectCN, objectAS, objectAS_S);
 
-	string  objectAS_S_file = filepath + "\\" + infilename + "_17.0_AS_O(S).png";			//Seed
+	string  objectAS_S_file = filepath + "\\" + infilename + "_16.0_AS_O(S).png";			//Seed
 	cv::imwrite(objectAS_S_file, objectAS_S);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
@@ -518,11 +537,11 @@ int main()
 	DrawLabel(objectWT, objectWT_L);
 	DrawImage(objectWT, grayWarp, objectWT_I);
 
-	string  objectWT_B_file = filepath + "\\" + infilename + "_18.0_WT_O(B).png";			//Binary
+	string  objectWT_B_file = filepath + "\\" + infilename + "_17.0_WT_O(B).png";			//Binary
 	cv::imwrite(objectWT_B_file, objectWT);
-	string  objectWT_L_file = filepath + "\\" + infilename + "_18.1_WT_O(L).png";			//Labels
+	string  objectWT_L_file = filepath + "\\" + infilename + "_17.1_WT_O(L).png";			//Labels
 	cv::imwrite(objectWT_L_file, objectWT_L);
-	string  objectWT_I_file = filepath + "\\" + infilename + "_18.2_WT_O(I).png";			//Combine
+	string  objectWT_I_file = filepath + "\\" + infilename + "_17.2_WT_O(I).png";			//Combine
 	cv::imwrite(objectWT_I_file, objectWT_I);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
@@ -546,11 +565,11 @@ int main()
 	DrawLabel(objectDE, objectDE_L);
 	DrawImage(objectDE, grayWarp, objectDE_I);
 
-	string  objectDE_B_file = filepath + "\\" + infilename + "_19.0_DE_O(B).png";			//Binary
+	string  objectDE_B_file = filepath + "\\" + infilename + "_18.0_DE_O(B).png";			//Binary
 	cv::imwrite(objectDE_B_file, objectDE);
-	string  objectDE_L_file = filepath + "\\" + infilename + "_19.1_DE_O(L).png";			//Labels
+	string  objectDE_L_file = filepath + "\\" + infilename + "_18.1_DE_O(L).png";			//Labels
 	cv::imwrite(objectDE_L_file, objectDE_L);
-	string  objectDE_I_file = filepath + "\\" + infilename + "_19.2_DE_O(I).png";			//Combine
+	string  objectDE_I_file = filepath + "\\" + infilename + "_18.2_DE_O(I).png";			//Combine
 	cv::imwrite(objectDE_I_file, objectDE_I);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
@@ -570,7 +589,7 @@ int main()
 	DrawEllipse(objectDE, objectFE, ellipse, square);
 
 #ifdef OUTPUTIMG
-	string  objectFE_B_file = filepath + "\\" + infilename + "_20.0_FE_O(B).png";			//Binary
+	string  objectFE_B_file = filepath + "\\" + infilename + "_19.0_FE_O(B).png";			//Binary
 	cv::imwrite(objectFE_B_file, objectFE);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME

@@ -63,6 +63,12 @@ void Gradient(InputArray _gray, OutputArray _gradient);
 //divide : remove ambient light gradient image (8UC1)
 void DivideLine(InputArray _gradient, InputArray _blur, OutputArray _divide);
 
+//Remove Ambient Light And Binary for Image Gradient
+//gradient : gradient image(8UC1)
+//blur : blur gradient image (8UC1)
+//divide : remove ambient light gradient image (8UC1(BW))
+void DivideLineBinary(InputArray _gradient, InputArray _blur, OutputArray _divide);
+
 //Hysteresis Cut Binary Image to Line by Area
 //binary : binary image (8UC1(BW))
 //area : area binary image (8UC1(BW))
