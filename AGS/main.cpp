@@ -410,7 +410,7 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat objectOpen;			//8UC1(BW)
-	Mat elementO = (Mat_<uchar>(5, 5) << 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0);
+	Mat elementO = (Mat_<uchar>(5, 5) << 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0); // circle
 	cv::morphologyEx(objectCOM, objectOpen, MORPH_OPEN, elementO);
 
 #ifdef OUTPUTIMG
