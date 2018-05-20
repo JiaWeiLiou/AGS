@@ -448,7 +448,7 @@ void Combine(InputArray _area, InputArray _line, OutputArray _binary)
 	}
 }
 
-void ClearNoise(InputArray _binary, OutputArray _clear)
+void ClearNoise(InputArray _binary, OutputArray _clear, float mumax)
 {
 	Mat binary = _binary.getMat();
 
@@ -480,7 +480,7 @@ void ClearNoise(InputArray _binary, OutputArray _clear)
 		maxSize = labeltable[i] > maxSize ? labeltable[i] : maxSize;
 	}
 
-	int tolSize = ceil((double)maxSize * 0.001);
+	int tolSize = round(mumax * mumax / 100);
 
 	for (size_t i = 0; i < labelImg.rows; ++i) {
 		for (size_t j = 0; j < labelImg.cols; ++j) {
@@ -657,13 +657,13 @@ void ExtendRegionalMinima(InputArray _distance, OutputArray _seed, float h)
 	_seed.create(distance.size(), CV_8UC1);
 	Mat seed = _seed.getMat();
 
-	float imageMinLength = distance.rows < distance.cols ? distance.rows : distance.cols;
+	//float imageMinLength = distance.rows < distance.cols ? distance.rows : distance.cols;
 
-	for (size_t i = 0; i < distance.rows; ++i) {
-		for (size_t j = 0; j < distance.cols; ++j) {
-			distance.at<float>(i, j) = distance.at<float>(i, j) > imageMinLength * 0.025 ? imageMinLength * 0.025 : distance.at<float>(i, j);
-		}
-	}
+	//for (size_t i = 0; i < distance.rows; ++i) {
+	//	for (size_t j = 0; j < distance.cols; ++j) {
+	//		distance.at<float>(i, j) = distance.at<float>(i, j) > imageMinLength * 0.025 ? imageMinLength * 0.025 : distance.at<float>(i, j);
+	//	}
+	//}
 
 	Mat objectHMT;
 	HMinimaTransform(distance, objectHMT, h);

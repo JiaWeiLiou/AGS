@@ -89,7 +89,8 @@ void Combine(InputArray _area, InputArray _line, OutputArray _binary);
 //Clear Black Noise
 //binary : binary image (8UC1(BW))
 //clear : clear noise image (8UC1(BW))
-void ClearNoise(InputArray _binary, OutputArray _clear);
+//mumax : max grain size of image
+void ClearNoise(InputArray _binary, OutputArray _clear, float mumax);
 
 //Image Reconstruct
 //marker : marker image (32FC1)
