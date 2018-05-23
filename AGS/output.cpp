@@ -251,20 +251,31 @@ void DrawColorBar(InputArray _gray, OutputArray _colorbarImg)
 	}
 
 	//linear stretch from 0 to 255
-	for (size_t i = 0; i < colorbarImg.rows; ++i) {
-		for (size_t j = 0; j < colorbarImg.cols; ++j) {
-			uchar *data = colorbarImg.data + colorbarImg.step[0] * i + colorbarImg.step[1] * j;
+	if (minvalue != maxvalue) {
+		for (size_t i = 0; i < colorbarImg.rows; ++i) {
+			for (size_t j = 0; j < colorbarImg.cols; ++j) {
+				uchar *data = colorbarImg.data + colorbarImg.step[0] * i + colorbarImg.step[1] * j;
 
-			float fk = (gray.at<float>(i, j) - minvalue) / (maxvalue - minvalue) * (colorbar.size() - 1);  //calculate the index of gray scale
-			int k0 = floor(fk);
-			int k1 = ceil(fk);
-			float f = fk - k0;
+				float fk = (gray.at<float>(i, j) - minvalue) / (maxvalue - minvalue) * (colorbar.size() - 1);  //calculate the index of gray scale
+				int k0 = floor(fk);
+				int k1 = ceil(fk);
+				float f = fk - k0;
 
-			for (size_t b = 0; b < 3; ++b) {
-				float col0 = colorbar[k0][b] / 255.0f;
-				float col1 = colorbar[k1][b] / 255.0f;
-				float col = (1 - f) * col0 + f * col1;
-				data[2 - b] = 255.0f * col;
+				for (size_t b = 0; b < 3; ++b) {
+					float col0 = colorbar[k0][b] / 255.0f;
+					float col1 = colorbar[k1][b] / 255.0f;
+					float col = (1 - f) * col0 + f * col1;
+					data[2 - b] = 255.0f * col;
+				}
+			}
+		}
+	} else {
+		for (size_t i = 0; i < colorbarImg.rows; ++i) {
+			for (size_t j = 0; j < colorbarImg.cols; ++j) {
+				uchar *data = colorbarImg.data + colorbarImg.step[0] * i + colorbarImg.step[1] * j;
+				data[0] = 255;
+				data[1] = 0;
+				data[2] = 0;
 			}
 		}
 	}

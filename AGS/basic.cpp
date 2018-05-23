@@ -21,6 +21,44 @@ void RGBToGray(InputArray _image, OutputArray _gray)
 	}
 }
 
+void GaussianBlurM(InputArray _gray, OutputArray _blur, size_t ksize, double sigma)
+{
+	Mat gray = _gray.getMat();
+	_blur.create(gray.size(), CV_8UC1);
+	Mat blur = _blur.getMat();
+
+	Mat kernel = cv::getGaussianKernel(ksize, sigma);
+
+	size_t addlen = (ksize - 1) / 2;
+	Mat grayH;
+	cv::copyMakeBorder(gray, grayH, 0, 0, addlen, addlen, BORDER_REFLECT_101);
+
+	Mat blurH(gray.size(), CV_8UC1);
+
+	for (size_t i = 0; i < blurH.rows; ++i) {
+		for (size_t j = 0; j < blurH.cols; ++j) {
+			double sum = 0;
+			for (size_t k = 0; k < kernel.rows; ++k) {
+				sum += kernel.at<double>(k, 1) * (double)grayH.at<uchar>(i, j + k);
+			}
+			blurH.at<uchar>(i, j) = sum;
+		}
+	}
+
+	Mat grayV;
+	cv::copyMakeBorder(blurH, grayV, addlen, addlen, 0, 0, BORDER_REFLECT_101);
+
+	for (size_t i = 0; i < blur.rows; ++i) {
+		for (size_t j = 0; j < blur.cols; ++j) {
+			double sum = 0;
+			for (size_t k = 0; k < kernel.rows; ++k) {
+				sum += kernel.at<double>(k, 1) * (double)grayV.at<uchar>(i + k, j);
+			}
+			blur.at<uchar>(i, j) = sum;
+		}
+	}
+}
+
 void DivideArea(InputArray _gray, InputArray _blur, OutputArray _divide)
 {
 	Mat gray = _gray.getMat();
@@ -174,12 +212,11 @@ void KittlerThresholdArea(InputArray _gray, OutputArray _binary)
 		}
 	}
 
-	double min = DBL_MAX;
 	char th = 0;
-	for (size_t i = 0; i < 256; ++i) {
-		if (J[i] < min) {
+	for (size_t i = 1; i < 255; ++i) {
+		if (J[i] <= J[i + 1] && J[i] <= J[i - 1] && J[i + 1] != DBL_MAX && J[i - 1] != DBL_MAX) {
 			th = i;
-			min = J[i];
+			break;
 		}
 	}
 

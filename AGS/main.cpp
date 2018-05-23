@@ -135,7 +135,8 @@ int main()
 	double sigma = ksize / 6.07;
 
 	Mat grayBlur;			//8UC1
-	cv::GaussianBlur(grayWarp, grayBlur, Size(ksize, ksize), sigma, sigma);
+	//cv::GaussianBlur(grayWarp, grayBlur, Size(ksize, ksize), sigma, sigma, BORDER_REFLECT_101);
+	GaussianBlurM(grayWarp, grayBlur, ksize, sigma);
 
 #ifdef OUTPUTIMG
 	Mat grayBlur_C;			//output(8UC3)
@@ -489,7 +490,7 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat objectEM;		//8UC1(BW)
-	ExtendRegionalMinima(objectDT, objectEM, 2);
+	ExtendRegionalMinima(objectDT, objectEM, 5);
 
 #ifdef OUTPUTIMG
 	Mat objectEM_S;		//output(8UC1)
@@ -503,26 +504,26 @@ int main()
 	cout << "Extend Local Minima : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
 #endif // OUTPUTTIME
 
-//	/* Add unlabeled labels */
-//
-//#ifdef OUTPUTTIME
-//	time1 = clock();
-//#endif // OUTPUTTIME
-//
-//	Mat objectAS;		//8UC1(BW)
-//	AddSeed(objectCN, objectEM, objectAS);
-//
-//#ifdef OUTPUTIMG
-//	Mat objectAS_S;		//output(8UC1)
-//	DrawSeed(objectCN, objectAS, objectAS_S);
-//
-//	string  objectAS_S_file = filepath + "\\" + infilename + "_16.0_AS_O(S).png";			//Seed
-//	cv::imwrite(objectAS_S_file, objectAS_S);
-//#endif // OUTPUTIMG
-//#ifdef OUTPUTTIME
-//	time2 = clock();
-//	cout << "Add unlabeled labels : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
-//#endif // OUTPUTTIME
+	/* Add unlabeled labels */
+
+#ifdef OUTPUTTIME
+	time1 = clock();
+#endif // OUTPUTTIME
+
+	Mat objectAS;		//8UC1(BW)
+	AddSeed(objectCN, objectEM, objectAS);
+
+#ifdef OUTPUTIMG
+	Mat objectAS_S;		//output(8UC1)
+	DrawSeed(objectCN, objectAS, objectAS_S);
+
+	string  objectAS_S_file = filepath + "\\" + infilename + "_16.0_AS_O(S).png";			//Seed
+	cv::imwrite(objectAS_S_file, objectAS_S);
+#endif // OUTPUTIMG
+#ifdef OUTPUTTIME
+	time2 = clock();
+	cout << "Add unlabeled labels : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+#endif // OUTPUTTIME
 
 	/* Watershed Segmentation */
 
@@ -531,7 +532,7 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat objectWT;		//8UC1(BW)
-	WatershedTransform(objectCN, objectEM, objectDT, objectWT);
+	WatershedTransform(objectCN, objectAS, objectDT, objectWT);
 	//WatershedTransform(objectCN, objectAS, objectDT, objectWT);
 
 #ifdef OUTPUTIMG
@@ -539,11 +540,11 @@ int main()
 	DrawLabel(objectWT, objectWT_L);
 	DrawImage(objectWT, grayWarp, objectWT_I);
 
-	string  objectWT_B_file = filepath + "\\" + infilename + "_16.0_WT_O(B).png";			//Binary
+	string  objectWT_B_file = filepath + "\\" + infilename + "_17.0_WT_O(B).png";			//Binary
 	cv::imwrite(objectWT_B_file, objectWT);
-	string  objectWT_L_file = filepath + "\\" + infilename + "_16.1_WT_O(L).png";			//Labels
+	string  objectWT_L_file = filepath + "\\" + infilename + "_17.1_WT_O(L).png";			//Labels
 	cv::imwrite(objectWT_L_file, objectWT_L);
-	string  objectWT_I_file = filepath + "\\" + infilename + "_16.2_WT_O(I).png";			//Combine
+	string  objectWT_I_file = filepath + "\\" + infilename + "_17.2_WT_O(I).png";			//Combine
 	cv::imwrite(objectWT_I_file, objectWT_I);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
@@ -567,11 +568,11 @@ int main()
 	DrawLabel(objectDE, objectDE_L);
 	DrawImage(objectDE, grayWarp, objectDE_I);
 
-	string  objectDE_B_file = filepath + "\\" + infilename + "_17.0_DE_O(B).png";			//Binary
+	string  objectDE_B_file = filepath + "\\" + infilename + "_18.0_DE_O(B).png";			//Binary
 	cv::imwrite(objectDE_B_file, objectDE);
-	string  objectDE_L_file = filepath + "\\" + infilename + "_17.1_DE_O(L).png";			//Labels
+	string  objectDE_L_file = filepath + "\\" + infilename + "_18.1_DE_O(L).png";			//Labels
 	cv::imwrite(objectDE_L_file, objectDE_L);
-	string  objectDE_I_file = filepath + "\\" + infilename + "_17.2_DE_O(I).png";			//Combine
+	string  objectDE_I_file = filepath + "\\" + infilename + "_18.2_DE_O(I).png";			//Combine
 	cv::imwrite(objectDE_I_file, objectDE_I);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
@@ -591,7 +592,7 @@ int main()
 	DrawEllipse(objectDE, objectFE, ellipse, square);
 
 #ifdef OUTPUTIMG
-	string  objectFE_B_file = filepath + "\\" + infilename + "_18.0_FE_O(B).png";			//Binary
+	string  objectFE_B_file = filepath + "\\" + infilename + "_19.0_FE_O(B).png";			//Binary
 	cv::imwrite(objectFE_B_file, objectFE);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
