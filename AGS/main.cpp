@@ -356,8 +356,9 @@ int main()
 	time1 = clock();
 #endif // OUTPUTTIME
 
-	Mat line;			//8UC1(BW)
-	ReverseBinary(lineHC, line);
+	Mat line(lineHC.size(), CV_8UC1);			//8UC1(BW)
+	lineHC.copyTo(line);			
+
 
 #ifdef OUTPUTIMG
 	Mat line_L, line_I;			//output(8UC3¡B8UC3)

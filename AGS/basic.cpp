@@ -369,9 +369,9 @@ void DivideLineBinary(InputArray _gradient, InputArray _blur, OutputArray _divid
 	for (size_t i = 0; i < gradient.rows; ++i) {
 		for (size_t j = 0; j < gradient.cols; ++j) {
 			if (blur.at<uchar>(i, j) >= gradient.at<uchar>(i, j)) {
-				divide.at<uchar>(i, j) = 0;
-			} else {
 				divide.at<uchar>(i, j) = 255;
+			} else {
+				divide.at<uchar>(i, j) = 0;
 			}
 		}
 	}
@@ -391,7 +391,7 @@ void HysteresisCut(InputArray _binary, InputArray _area, OutputArray _line)
 
 	for (size_t i = 0; i < binary.rows; ++i) {
 		for (size_t j = 0; j < binary.cols; ++j) {
-			if (binary.at<uchar>(i, j)) {
+			if (!binary.at<uchar>(i, j)) {
 				if (area.at<uchar>(i, j)) {
 					MT.at<uchar>(i, j) = 255;
 				} else {
@@ -437,9 +437,9 @@ void HysteresisCut(InputArray _binary, InputArray _area, OutputArray _line)
 	for (size_t i = 0; i < line.rows; ++i) {
 		for (size_t j = 0; j < line.cols; ++j) {
 			if (labeltable[labelImg.at<int>(i, j)] || UT.at<uchar>(i, j)) {
-				line.at<uchar>(i, j) = 255;
-			} else {
 				line.at<uchar>(i, j) = 0;
+			} else {
+				line.at<uchar>(i, j) = 255;
 			}
 		}
 	}
