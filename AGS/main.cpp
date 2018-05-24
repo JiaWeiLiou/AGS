@@ -130,7 +130,7 @@ int main()
 	time1 = clock();
 #endif // OUTPUTTIME
 
-	int ksize = round(mumax * 6);
+	int ksize = round(mumax * 2);
 	ksize = ksize % 2 ? ksize : ksize + 1;
 	double sigma = ksize / 6.07;
 

@@ -35,9 +35,10 @@ void GaussianBlurM(InputArray _gray, OutputArray _blur, size_t ksize, double sig
 
 	Mat blurH(gray.size(), CV_8UC1);
 
+	double sum = 0;
 	for (size_t i = 0; i < blurH.rows; ++i) {
 		for (size_t j = 0; j < blurH.cols; ++j) {
-			double sum = 0;
+			sum = 0;
 			for (size_t k = 0; k < kernel.rows; ++k) {
 				sum += kernel.at<double>(k, 1) * (double)grayH.at<uchar>(i, j + k);
 			}
@@ -50,7 +51,7 @@ void GaussianBlurM(InputArray _gray, OutputArray _blur, size_t ksize, double sig
 
 	for (size_t i = 0; i < blur.rows; ++i) {
 		for (size_t j = 0; j < blur.cols; ++j) {
-			double sum = 0;
+			sum = 0;
 			for (size_t k = 0; k < kernel.rows; ++k) {
 				sum += kernel.at<double>(k, 1) * (double)grayV.at<uchar>(i + k, j);
 			}

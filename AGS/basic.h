@@ -31,7 +31,7 @@ using namespace cv;
 //gray : gray image (8UC1)
 void RGBToGray(InputArray _image, OutputArray _gray);
 
-//Gaussian Blur
+//Gaussian Blur Coding by Mysely
 //gray : gray image (8UC1)
 //blur : blur image (8UC1)
 void GaussianBlurM(InputArray _gray, OutputArray _blur, size_t ksize, double sigma);
