@@ -130,13 +130,14 @@ int main()
 	time1 = clock();
 #endif // OUTPUTTIME
 
-	int ksize = round(mumax * 2);
+	size_t ksize = round(mumax * 5);
 	ksize = ksize % 2 ? ksize : ksize + 1;
 	double sigma = ksize / 6.07;
 
 	Mat grayBlur;			//8UC1
 	//cv::GaussianBlur(grayWarp, grayBlur, Size(ksize, ksize), sigma, sigma, BORDER_REFLECT_101);
-	GaussianBlurM(grayWarp, grayBlur, ksize, sigma);
+	//GaussianBlurM(grayWarp, grayBlur, ksize, sigma);
+	GaussianBlurF(grayWarp, grayBlur, sigma, 5);
 
 #ifdef OUTPUTIMG
 	Mat grayBlur_C;			//output(8UC3)

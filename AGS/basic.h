@@ -31,10 +31,25 @@ using namespace cv;
 //gray : gray image (8UC1)
 void RGBToGray(InputArray _image, OutputArray _gray);
 
-//Gaussian Blur Coding by Mysely
+//Gaussian Blur Coding by Myself
 //gray : gray image (8UC1)
 //blur : blur image (8UC1)
-void GaussianBlurM(InputArray _gray, OutputArray _blur, size_t ksize, double sigma);
+//ksize : size of gaussian kernal
+//sigma : sigma of gaussian kernal
+void GaussianBlurM(InputArray _gray, OutputArray _blur, const size_t ksize, const double sigma);
+
+//Fast Gaussian Blur
+//gray : gray image (8UC1)
+//blur : blur image (8UC1)
+//sigma : sigma of gaussian kernal
+//n : repeat number
+void GaussianBlurF(InputArray _gray, OutputArray _blur, const double sigma, size_t n);
+
+//Box Blur
+//gray : gray image (8UC1)
+//blur : blur image (8UC1)
+//r : radius of box
+void boxBlurM(InputArray _gray, OutputArray _blur, size_t r);
 
 //Remove Ambient Light for Area
 //gray : gray image (8UC1)

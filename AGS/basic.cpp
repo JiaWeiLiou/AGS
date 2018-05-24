@@ -21,7 +21,7 @@ void RGBToGray(InputArray _image, OutputArray _gray)
 	}
 }
 
-void GaussianBlurM(InputArray _gray, OutputArray _blur, size_t ksize, double sigma)
+void GaussianBlurM(InputArray _gray, OutputArray _blur, const size_t ksize, const double sigma)
 {
 	Mat gray = _gray.getMat();
 	_blur.create(gray.size(), CV_8UC1);
@@ -56,6 +56,81 @@ void GaussianBlurM(InputArray _gray, OutputArray _blur, size_t ksize, double sig
 				sum += kernel.at<double>(k, 1) * (double)grayV.at<uchar>(i + k, j);
 			}
 			blur.at<uchar>(i, j) = sum;
+		}
+	}
+}
+
+void GaussianBlurF(InputArray _gray, OutputArray _blur, const double sigma, size_t n)
+{
+	Mat gray = _gray.getMat();
+	_blur.create(gray.size(), CV_8UC1);
+	Mat blur = _blur.getMat();
+
+	float wIdeal = sqrt((12 * sigma*sigma / n) + 1);  // Ideal averaging filter width 
+	size_t wl = floor(wIdeal);
+	if (wl % 2 == 0) --wl;
+	size_t wu = wl + 2;
+
+	float mIdeal = (12 * sigma*sigma - n*wl*wl - 4 * n*wl - 3 * n) / (-4 * wl - 4);
+	size_t m = round(mIdeal);
+	// var sigmaActual = Math.sqrt( (m*wl*wl + (n-m)*wu*wu - n)/12 );
+
+	Mat grayblur(gray.size(), CV_8UC1);
+	gray.copyTo(grayblur);
+
+	for (size_t i = 0; i < m + n; ++i) {
+		size_t size = i < m ? wl : wu;
+		boxBlurM(grayblur, blur, (size - 1) / 2);
+		blur.copyTo(grayblur);
+	}
+}
+
+void boxBlurM(InputArray _gray, OutputArray _blur, size_t r)
+{
+	Mat gray = _gray.getMat();
+	_blur.create(gray.size(), CV_8UC1);
+	Mat blur = _blur.getMat();
+
+	double iarr = 1.0f / (r + r + 1);
+	Mat blurH(gray.size(), CV_8UC1, Scalar(0));
+
+	//Horizontal
+	for (size_t i = 0; i < gray.rows; ++i) {
+		double val = 0;
+		// first value
+		for (size_t j = 1; j < r + 1; ++j) {
+			val += gray.at<uchar>(i, j);
+		}
+		for (size_t j = 0; j < r - 1; ++j) {
+			val += gray.at<uchar>(i, j);
+		}
+
+		// from 0 to cols
+		for (size_t j = 0; j < gray.cols; ++j) {
+			int j1 = gray.cols - 1 - abs((int)(j - gray.cols + 1 + r));
+			int j2 = abs((int)(r - j + 1));
+			val += gray.at<uchar>(i, j1) - gray.at<uchar>(i, j2);
+			blurH.at<uchar>(i, j) = round(val * iarr);
+		}
+	}
+
+	//Vertical
+	for (size_t j = 0; j < gray.cols; ++j) {
+		double val = 0;
+		// first value
+		for (size_t i = 1; i < r + 1; ++i) {
+			val += blurH.at<uchar>(i, j);
+		}
+		for (size_t i = 0; i < r - 1; ++i) {
+			val += blurH.at<uchar>(i, j);
+		}
+
+		// from 0 to rows
+		for (size_t i = 0; i < gray.rows; ++i) {
+			int i1 = gray.rows - 1 - abs((int)(i - gray.rows + 1 + r));
+			int i2 = abs((int)(r - i + 1));
+			val += blurH.at<uchar>(i1, j) - blurH.at<uchar>(i2, j);
+			blur.at<uchar>(i, j) = round(val * iarr);
 		}
 	}
 }
@@ -214,7 +289,7 @@ void KittlerThresholdArea(InputArray _gray, OutputArray _binary)
 	}
 
 	char th = 0;
-	for (size_t i = 1; i < 255; ++i) {
+	for (size_t i = 50; i < 255; ++i) {
 		if (J[i] <= J[i + 1] && J[i] <= J[i - 1] && J[i + 1] != DBL_MAX && J[i - 1] != DBL_MAX) {
 			th = i;
 			break;
