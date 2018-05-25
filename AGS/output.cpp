@@ -359,7 +359,7 @@ void DrawSeed(InputArray _binary, InputArray _seed, OutputArray _combineImg)
 	}
 }
 
-void DrawEllipse(InputArray _object, OutputArray _ellipseImg, vector<Size2f> &ellipse_param, vector<Size2f> &square_param)
+void DrawEllipse(InputArray _object, OutputArray _ellipseImg, vector<Size2f> &ellipse_param)
 {
 	Mat object = _object.getMat();
 
@@ -380,58 +380,85 @@ void DrawEllipse(InputArray _object, OutputArray _ellipseImg, vector<Size2f> &el
 		}
 	}
 
-	vector<vector<Point2i>> pointset1;
-	vector<vector<Point2i>> pointset2;
+	vector<vector<Point2i>> pointset;
 	for (size_t i = 0; i < objectNum; ++i) { 
-		pointset1.push_back(vector<Point2i>()); 
-		pointset2.push_back(vector<Point2i>());
-
-		pointset2[i].push_back(Point2i(object.cols, 0));	//left
-		pointset2[i].push_back(Point2i(0, object.rows));	//top
-		pointset2[i].push_back(Point2i(0, 0));				//right
-		pointset2[i].push_back(Point2i(0, 0));				//down
+		pointset.push_back(vector<Point2i>()); 
 	}
 
 	for (size_t i = 0; i < labels.rows; ++i) {
 		for (size_t j = 0; j < labels.cols; ++j) {
 			if (labels.at<int>(i, j)) {
-				pointset1[labels.at<int>(i, j) - 1].push_back(Point2i(j, i));
-
-				if (j < pointset2[labels.at<int>(i, j) - 1][0].x) {
-					pointset2[labels.at<int>(i, j) - 1][0] = Point2i(j, i);
-				} else if (j > pointset2[labels.at<int>(i, j) - 1][2].x) {
-					pointset2[labels.at<int>(i, j) - 1][2] = Point2i(j, i);
-				}
-
-				if (i < pointset2[labels.at<int>(i, j) - 1][1].y) {
-					pointset2[labels.at<int>(i, j) - 1][1] = Point2i(j, i);
-				} else if (i > pointset2[labels.at<int>(i, j) - 1][3].y) {
-					pointset2[labels.at<int>(i, j) - 1][3] = Point2i(j, i);
-				}
+				pointset[labels.at<int>(i, j) - 1].push_back(Point2i(j, i));
 			}
 		}
 	}
 
 	for (size_t i = 0; i < objectNum; ++i) {
-		float length = 0;
-		if (pointset1[i].size() > 5) {
-			RotatedRect ellipse_obj = fitEllipse(pointset1[i]);
+		if (pointset[i].size() > 5) {
+			RotatedRect ellipse_obj = fitEllipse(pointset[i]);
 
 			//draw ellipse
 			ellipse(ellipseImg, ellipse_obj, Scalar(255), 1, CV_AA);
 
 			// store ellipse
 			ellipse_param.push_back(ellipse_obj.size);
+		}
+	}
+}
 
-			for (size_t j = 0; j < 3; ++j) {
-				for (size_t k = j + 1; k < 4; ++k) {
-					float temp = sqrt(pow(pointset2[i][j].x - pointset2[i][k].x, 2) + pow(pointset2[i][j].y - pointset2[i][k].y, 2));
-					length = length > temp ? length : temp;
-				}
+void DrawEllipseS(InputArray _object, OutputArray _ellipseImg, vector<Size2f> &ellipse_param)
+{
+	Mat object = _object.getMat();
+
+	_ellipseImg.create(object.size(), CV_8UC1);
+	Mat ellipseImg = _ellipseImg.getMat();
+	ellipseImg = Scalar(0);
+
+	Mat labels;
+	int objectNum = bwlabel(object, labels, 4);
+
+	set<int> samplelabel;
+	size_t size = object.rows < object.cols ? round((float)object.rows / 11.0f) : round((float)object.cols / 11.0f);
+	for (size_t i = 0; i < object.rows; ++i) {
+		for (size_t j = 0; j < object.cols; ++j) {
+			if (i % size == 0 && j % size == 0 && labels.at<int>(i, j)) {
+				samplelabel.insert(labels.at<int>(i, j) - 1);
 			}
+		}
+	}
 
-			Size2f param = Size2f(length, sqrt((float)(pow(pointset2[i][2].x - pointset2[i][0].x, 2) + pow(pointset2[i][3].y - pointset2[i][1].y, 2))));
-			square_param.push_back(param);
+	Mat elementO = (Mat_<uchar>(3, 3) << 1, 1, 1, 1, 1, 1, 1, 1, 1);
+	Mat objectErode;
+	morphologyEx(object, objectErode, MORPH_ERODE, elementO);
+
+	for (size_t i = 0; i < object.rows; ++i) {
+		for (size_t j = 0; j < object.cols; ++j) {
+			labels.at<int>(i, j) = objectErode.at<uchar>(i, j) ? 0 : labels.at<int>(i, j);
+		}
+	}
+
+	vector<vector<Point2i>> pointset;
+	for (size_t i = 0; i < objectNum; ++i) {
+		pointset.push_back(vector<Point2i>());
+	}
+
+	for (size_t i = 0; i < labels.rows; ++i) {
+		for (size_t j = 0; j < labels.cols; ++j) {
+			if (labels.at<int>(i, j)) {
+				pointset[labels.at<int>(i, j) - 1].push_back(Point2i(j, i));
+			}
+		}
+	}
+
+	for (size_t i = 0; i < objectNum; ++i) {
+		if (pointset[i].size() > 5 && samplelabel.find(i) != samplelabel.end()) {
+			RotatedRect ellipse_obj = fitEllipse(pointset[i]);
+
+			//draw ellipse
+			ellipse(ellipseImg, ellipse_obj, Scalar(255), 1, CV_AA);
+
+			// store ellipse
+			ellipse_param.push_back(ellipse_obj.size);
 		}
 	}
 }
