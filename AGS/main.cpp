@@ -114,8 +114,13 @@ int main()
 	cv::warpPerspective(gray, grayWarp, perspectiveMatrix, Size(pl, pl), INTER_CUBIC);
 
 #ifdef OUTPUTIMG
+	Mat grayWarp_C;			//output(8UC3)
+	DrawColorBar(grayWarp, grayWarp_C);
+
 	string grayWarp_G_file = filepath + "\\" + infilename + "_1.0_WARP_I(G).png";			//Gray
 	cv::imwrite(grayWarp_G_file, grayWarp);
+	string grayWarp_C_file = filepath + "\\" + infilename + "_1.1_WARP_I(C).png";			//Color
+	cv::imwrite(grayWarp_C_file, grayWarp_C);
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
 	time2 = clock();
