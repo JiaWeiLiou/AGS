@@ -198,7 +198,7 @@ int main()
 #endif // OUTPUTIMG
 #ifdef OUTPUTTIME
 	time2 = clock();
-	cout << "Otsu Threshold : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
+	cout << "Kittler Threshold : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
 #endif // OUTPUTTIME
 
 	/* Area */
