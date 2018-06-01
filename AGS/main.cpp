@@ -608,8 +608,8 @@ int main()
 #endif // OUTPUTTIME
 
 	ofstream outfileM, outfileL;
-	string outputPathM = filepath + "\\" + "AGS_M(PSD).txt";
-	string outputPathL = filepath + "\\" + "AGS_L(PSD).txt";
+	string outputPathM = filepath + "\\" + "FULL_AGS_M(PSD).txt";
+	string outputPathL = filepath + "\\" + "FULL_AGS_L(PSD).txt";
 	outfileM.open(outputPathM, ios::out | ios::trunc);
 	outfileL.open(outputPathL, ios::out | ios::trunc);
 
