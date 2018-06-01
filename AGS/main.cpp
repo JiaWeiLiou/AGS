@@ -595,8 +595,8 @@ int main()
 
 	Mat objectFE;		//8UC1(BW)
 	vector<Size2f> ellipse;
-	//DrawEllipse(objectDE, objectFE, ellipse);
-	DrawEllipseS(objectDE, objectFE, ellipse);
+	DrawEllipse(objectDE, objectFE, ellipse);
+	//DrawEllipseS(objectDE, objectFE, ellipse);
 
 #ifdef OUTPUTIMG
 	string  objectFE_B_file = filepath + "\\" + infilename + "_19.0_FE_O(B).png";			//Binary
