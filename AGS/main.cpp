@@ -261,7 +261,7 @@ int main()
 	Mat gradmBlur;			//8UC1
 	//sigma = 5 / 6.07;
 	// cv::GaussianBlur(gradm, gradmBlur, Size(5, 5), sigma, sigma);
-	blur(gradm, gradmBlur, Size(3, 3));
+	blur(gradm, gradmBlur, Size(5, 5));
 
 #ifdef OUTPUTIMG
 	Mat gradmBlur_C;			//output(8UC3)
@@ -276,49 +276,6 @@ int main()
 	time2 = clock();
 	cout << "Bluring Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
 #endif // OUTPUTTIME
-
-//	/* Remove Ambient Light for Image Gradient */
-//
-//#ifdef OUTPUTTIME
-//	time1 = clock();
-//#endif // OUTPUTTIME
-//
-//	Mat gradmDIV;			//8UC1
-//	DivideLine(gradm, gradmBlur, gradmDIV);
-//
-//#ifdef OUTPUTIMG
-//	Mat gradmDIV_G, gradmDIV_C;			//output(8UC1¡B8UC3)
-//	DrawGrayBar(gradmDIV, gradmDIV_G);
-//	DrawColorBar(gradmDIV, gradmDIV_C);
-//
-//	string gradmDIV_G_file = filepath + "\\" + infilename + "_8.0_DIV_M(G).png";		//Gray
-//	cv::imwrite(gradmDIV_G_file, gradmDIV_G);
-//	string gradmDIV_C_file = filepath + "\\" + infilename + "_8.1_DIV_M(C).png";		//Color
-//	cv::imwrite(gradmDIV_C_file, gradmDIV_C);
-//#endif // OUTPUTIMG
-//#ifdef OUTPUTTIME
-//	time2 = clock();
-//	cout << "Remove Ambient Light for Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
-//#endif // OUTPUTTIME
-//
-//	/* Binary Image Gradient */
-//
-//#ifdef OUTPUTTIME
-//	time1 = clock();
-//#endif // OUTPUTTIME
-//
-//	Mat gradmHT;			//8UC1(BW)
-//	cv::threshold(gradmDIV, gradmHT, 1, 255, THRESH_BINARY);
-//	//KittlerThresholdLine(gradm, gradmHT);
-//
-//#ifdef OUTPUTIMG
-//	string gradmHT_B_file = filepath + "\\" + infilename + "_9.0_HT_M(B).png";			//Binary
-//	cv::imwrite(gradmHT_B_file, gradmHT);
-//#endif // OUTPUTIMG
-//#ifdef OUTPUTTIME
-//	time2 = clock();
-//	cout << "Binary Image Gradient : " << (float)(time2 - time1) / CLOCKS_PER_SEC << " s" << endl;
-//#endif // OUTPUTTIME
 
 	/* Remove Ambient Light And Binary for Image Gradient */
 
@@ -540,7 +497,6 @@ int main()
 
 	Mat objectWT;		//8UC1(BW)
 	WatershedTransform(objectCN, objectAS, objectDT, objectWT);
-	//WatershedTransform(objectCN, objectAS, objectDT, objectWT);
 
 #ifdef OUTPUTIMG
 	Mat objectWT_L, objectWT_I;		//output(8UC3¡B8UC3)
