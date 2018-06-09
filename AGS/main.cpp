@@ -259,8 +259,6 @@ int main()
 #endif // OUTPUTTIME
 
 	Mat gradmBlur;			//8UC1
-	//sigma = 5 / 6.07;
-	// cv::GaussianBlur(gradm, gradmBlur, Size(5, 5), sigma, sigma);
 	blur(gradm, gradmBlur, Size(5, 5));
 
 #ifdef OUTPUTIMG
